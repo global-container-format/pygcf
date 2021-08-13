@@ -1,0 +1,6 @@
+.vscode/
+
+venv/
+dist/
+pygcf.egg-info/
+__pycache__/
