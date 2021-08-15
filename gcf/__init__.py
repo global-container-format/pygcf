@@ -1,4 +1,3 @@
-
 import os
 import struct
 from typing import Iterable
@@ -22,11 +21,11 @@ class SupercompressionScheme(IntEnum):
 @unique
 class ResourceType(IntEnum):
     Blob = 0,
-    ColorMap = 1
+    Image = 1
 
 
 class Header:
-    DEFAULT_VERSION = 1
+    DEFAULT_VERSION = 2
     MAGIC_PREFIX = 'GC'
     FORMAT = '=4BHH'
     FORMAT_SIZE = struct.calcsize(FORMAT)
@@ -66,7 +65,63 @@ class Header:
 
 
 class ResourceDescriptor:
-    FORMAT = '=3I4H2BHQ'
+    FORMAT = '=3IH1'
+    FORMAT_SIZE = struct.calcsize(FORMAT)
+    TYPE_DATA_OFFSET = 14
+    TYPE_DATA_SIZE = 18
+
+    def __init__(
+        self,
+        resource_type: ResourceType,
+        format: VkFormat,
+        size: int,
+        /,
+        header: Header,
+        supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NoCompression,
+        type_data: bytes = b'\x00' * TYPE_DATA_SIZE
+    ):
+        self.resource_type = resource_type
+        self.format = format
+        self.size = size
+        self.supercompression_scheme = supercompression_scheme
+        self.type_data = type_data
+        self.header = header
+
+    def serialize(self):
+        return struct.pack(
+            self.FORMAT,
+            self.resource_type,
+            self.format,
+            self.size,
+            self.supercompression_scheme,
+            self.type_data
+        )
+
+    @classmethod
+    def from_bytes(cls, raw: bytes, header: Header):
+        fields = struct.unpack(cls.FORMAT, raw)
+        resource_type = ResourceType(fields[0])
+        format = VkFormat(fields[1])
+        size = fields[2]
+        supercompression_scheme = SupercompressionScheme(fields[3])
+        type_data = raw[cls.TYPE_DATA_OFFSET:]
+
+        return cls(
+            resource_type, format, size,
+            supercompression_scheme=supercompression_scheme,
+            type_data=type_data,
+            header=header
+        )
+
+    @classmethod
+    def from_file(cls, f, header: Header):
+        raw_descriptor = f.read(cls.FORMAT_SIZE)
+
+        return cls.from_bytes(raw_descriptor, header)
+
+
+class ImageResourceDescriptor(ResourceDescriptor):
+    FORMAT = '=3H2BHQ'
     FORMAT_SIZE = struct.calcsize(FORMAT)
 
     def __init__(
@@ -82,57 +137,65 @@ class ResourceDescriptor:
         flags: int = 0,
         type_data: int = 0
     ):
-        self.resource_type = resource_type
-        self.format = format
-        self.size = size
+        super().__init__(
+            resource_type,
+            format,
+            size,
+            header=header,
+            supercompression_scheme=supercompression_scheme,
+            type_data=type_data
+        )
+
         self.width = width
         self.height = height
         self.depth = depth
         self.layer_count = layer_count
         self.mip_level_count = mip_level_count
-        self.supercompression_scheme = supercompression_scheme
         self.flags = flags
-        self.type_data = type_data
-        self.header = header
 
     def serialize(self):
-        return struct.pack(
+        resource = super().serialize()
+        type_data = struct.pack(
             self.FORMAT,
-            self.resource_type, self.format, self.size, self.supercompression_scheme,
             self.width, self.height, self.depth,
             self.layer_count, self.mip_level_count,
-            self.flags, self.type_data
+            self.flags
         )
 
+        resource[self.TYPE_DATA_OFFSET:self.TYPE_DATA_OFFSET + self.TYPE_DATA_SIZE] = type_data
+
+        return resource
+
     @classmethod
-    def from_bytes(cls, raw: bytes, header: Header):
-        fields = struct.unpack(cls.FORMAT, raw)
-        resource_type = ResourceType(fields[0])
-        format = VkFormat(fields[1])
-        size = fields[2]
-        supercompression_scheme = SupercompressionScheme(fields[3])
-        width, height, depth = fields[4:7]
-        layer_count = fields[7]
-        mip_level_count = fields[8]
-        flags = fields[9]
-        type_data = fields[10]
+    def from_resource_descriptor(cls, descriptor: ResourceDescriptor):
+        fields = struct.unpack(cls.FORMAT, descriptor.type_data)
+        width, height, depth = fields[0:3]
+        layer_count = fields[3]
+        mip_level_count = fields[4]
+        flags = fields[5]
 
         return cls(
-            resource_type, format, size,
+            descriptor.resource_type, descriptor.format, descriptor.size,
             width=width, height=height, depth=depth,
             layer_count=layer_count,
             mip_level_count=mip_level_count,
-            supercompression_scheme=supercompression_scheme,
+            supercompression_scheme=descriptor.supercompression_scheme,
             flags=flags,
-            type_data=type_data,
-            header=header
+            type_data=descriptor.type_data,
+            header=descriptor.header
         )
 
     @classmethod
     def from_file(cls, f, header: Header):
-        raw_descriptor = f.read(cls.FORMAT_SIZE)
+        base_descriptor = ResourceDescriptor.from_file(f, header)
 
-        return cls.from_bytes(raw_descriptor, header)
+        return cls.from_resource_descriptor(base_descriptor)
+
+    @classmethod
+    def from_bytes(cls, raw: bytes, header: Header):
+        base_descriptor = ResourceDescriptor.from_bytes(raw, header)
+
+        return cls.from_resource_descriptor(base_descriptor)
 
 
 class Resource:
@@ -164,3 +227,11 @@ def skip_resources(f, n: int, header: Header):
     for _ in range(n):
         descriptor = ResourceDescriptor.from_file(f, header)
         f.seek(descriptor.size, os.SEEK_CUR)
+
+
+def decode_resource_descriptor(descriptor: ResourceDescriptor):
+    """Convert a generic resource descriptor into a more specific one depending on the resource type."""
+    if descriptor.resource_type == ResourceType.Image:
+        return ImageResourceDescriptor.from_resource_descriptor(descriptor)
+
+    return descriptor

@@ -7,7 +7,7 @@ from .compress import COMPRESSOR_TABLE
 from .vulkan import Format, FORMAT_SIZE_TABLE
 
 
-class ColorMapFlags(IntFlag):
+class ImageFlags(IntFlag):
     Image1D = 0x0001
     Image2D = 0x0003
     Image3D = 0x0007
@@ -107,7 +107,7 @@ class MipLevel:
         return cls(descriptor, compressed_data)
 
 
-class ColorMap(Resource):
+class ImageResource(Resource):
     def __init__(self, descriptor: ResourceDescriptor, mip_levels: Iterable[MipLevel]):
         super().__init__(descriptor)
 
