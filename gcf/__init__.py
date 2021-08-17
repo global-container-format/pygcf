@@ -21,7 +21,8 @@ class SupercompressionScheme(IntEnum):
 @unique
 class ResourceType(IntEnum):
     Blob = 0,
-    Image = 1
+    Image = 1,
+    Test = 0xffffffff
 
 
 class Header:
@@ -32,11 +33,15 @@ class Header:
 
     def __init__(self, resource_count: int, flags: Iterable[ContainerFlags] = None, version: int = None):
         self.resource_count = resource_count
-        self.version = version if version is not None else self.DEFAULT_VERSION
+        self.version = version or self.DEFAULT_VERSION
         self.flags = set(flags or ())
 
+    @classmethod
+    def _make_valid_version(cls, version_number):
+        return '{}{:02d}'.format(cls.MAGIC_PREFIX, version_number)
+
     def serialize(self) -> bytes:
-        magic = '{}{:02d}'.format(self.MAGIC_PREFIX, self.version).encode('ascii')
+        magic = self._make_valid_version(self.version).encode('ascii')
         flags = 0
 
         for x in self.flags:
@@ -45,13 +50,14 @@ class Header:
         return struct.pack(self.FORMAT, *magic, self.resource_count, flags)
 
     @classmethod
-    def from_bytes(cls, raw: bytes):
+    def from_bytes(cls, raw: bytes, /, valid_version=DEFAULT_VERSION):
         *magic, resource_count, raw_flags = struct.unpack(cls.FORMAT, raw)
 
         magic = ''.join(map(chr, magic))
+        valid_magic = cls._make_valid_version(valid_version)
 
-        if magic != 'GC01':
-            raise ValueError(f'Invalid magic "{magic}".')
+        if magic != valid_magic:
+            raise ValueError(f'Invalid magic "{magic}", should be "{valid_magic}".')
 
         version = int(magic[2:])
         flags = (x for x in ContainerFlags if x.value & raw_flags)
@@ -59,13 +65,13 @@ class Header:
         return cls(resource_count, flags, version)
 
     @classmethod
-    def from_file(cls, f):
+    def from_file(cls, f, /, valid_version=DEFAULT_VERSION):
         raw_header = f.read(cls.FORMAT_SIZE)
-        return cls.from_bytes(raw_header)
+        return cls.from_bytes(raw_header, valid_version=valid_version)
 
 
 class ResourceDescriptor:
-    FORMAT = '=3IH1'
+    FORMAT = '=3IH'
     FORMAT_SIZE = struct.calcsize(FORMAT)
     TYPE_DATA_OFFSET = 14
     TYPE_DATA_SIZE = 18
@@ -93,13 +99,12 @@ class ResourceDescriptor:
             self.resource_type,
             self.format,
             self.size,
-            self.supercompression_scheme,
-            self.type_data
-        )
+            self.supercompression_scheme
+        ) + self.type_data
 
     @classmethod
     def from_bytes(cls, raw: bytes, header: Header):
-        fields = struct.unpack(cls.FORMAT, raw)
+        fields = struct.unpack(cls.FORMAT, raw[:cls.TYPE_DATA_OFFSET])
         resource_type = ResourceType(fields[0])
         format = VkFormat(fields[1])
         size = fields[2]
@@ -115,7 +120,7 @@ class ResourceDescriptor:
 
     @classmethod
     def from_file(cls, f, header: Header):
-        raw_descriptor = f.read(cls.FORMAT_SIZE)
+        raw_descriptor = f.read(cls.FORMAT_SIZE + cls.TYPE_DATA_SIZE)
 
         return cls.from_bytes(raw_descriptor, header)
 
