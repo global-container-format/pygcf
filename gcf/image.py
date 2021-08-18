@@ -1,8 +1,8 @@
-import os
 import struct
+from functools import reduce
 from enum import IntFlag
 from typing import Iterable
-from . import ResourceDescriptor, Resource, SupercompressionScheme
+from . import ResourceDescriptor, Resource, SupercompressionScheme, Header, ResourceType
 from .compress import COMPRESSOR_TABLE
 from .vulkan import Format, FORMAT_SIZE_TABLE
 
@@ -107,6 +107,94 @@ class MipLevel:
         return cls(descriptor, compressed_data)
 
 
+class ImageResourceDescriptor(ResourceDescriptor):
+    TYPE_DATA_FORMAT = '=3H2BHQ'
+    TYPE_DATA_FORMAT_SIZE = struct.calcsize(TYPE_DATA_FORMAT)
+
+    def __init__(
+        self,
+        format: Format,
+        size: int,
+        /,
+        header: Header,
+        width: int, height: int, depth: int = 1,
+        layer_count: int = 1, mip_level_count: int = 1,
+        supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NoCompression,
+        flags: Iterable[ImageFlags] = 0
+    ):
+        super().__init__(
+            ResourceType.Image,
+            format,
+            size,
+            header=header,
+            supercompression_scheme=supercompression_scheme,
+            type_data=self.TYPE_DATA_CUSTOM
+        )
+
+        self.width = width
+        self.height = height
+        self.depth = depth
+        self.layer_count = layer_count
+        self.mip_level_count = mip_level_count
+        self.flags = set(flags)
+
+    @property
+    def type_data(self) -> bytes:
+        raw_flags = reduce(lambda x, y: x | y, self.flags)
+
+        return struct.pack(
+            self.TYPE_DATA_FORMAT,
+            self.width, self.height, self.depth,
+            self.layer_count, self.mip_level_count,
+            raw_flags,
+            0
+        )
+
+    @staticmethod
+    def _decode_flags(raw_flags):
+        flags = set()
+
+        # The Image[1,2,3]D flags share the same bits; only one should be
+        # allowed.
+        for f in (ImageFlags.Image3D, ImageFlags.Image2D, ImageFlags.Image1D):
+            if raw_flags & f.value == f.value:
+                flags.add(f)
+                break
+
+        return flags
+
+    @classmethod
+    def from_resource_descriptor(cls, descriptor: ResourceDescriptor):
+        fields = struct.unpack(cls.TYPE_DATA_FORMAT, descriptor.type_data)
+        width, height, depth = fields[0:3]
+        layer_count = fields[3]
+        mip_level_count = fields[4]
+        raw_flags = fields[5]
+        flags = cls._decode_flags(raw_flags)
+
+        return cls(
+            descriptor.format, descriptor.size,
+            width=width, height=height, depth=depth,
+            layer_count=layer_count,
+            mip_level_count=mip_level_count,
+            supercompression_scheme=descriptor.supercompression_scheme,
+            flags=flags,
+            header=descriptor.header
+        )
+
+    @classmethod
+    def from_file(cls, f, header: Header):
+        base_descriptor = ResourceDescriptor.from_file(f, header)
+
+        return cls.from_resource_descriptor(base_descriptor)
+
+    @classmethod
+    def from_bytes(cls, raw: bytes, header: Header):
+        base_descriptor = ResourceDescriptor.from_bytes(raw, header)
+
+        return cls.from_resource_descriptor(base_descriptor)
+
+
 class ImageResource(Resource):
     def __init__(self, descriptor: ResourceDescriptor, mip_levels: Iterable[MipLevel]):
         super().__init__(descriptor)
@@ -123,10 +211,3 @@ class ImageResource(Resource):
             data += mip_level.serialize()
 
         return data
-
-
-def skip_mip_levels(f, n: int):
-    """Skip the given number of mip levels from file."""
-    for _ in range(n):
-        descriptor = MipLevelDescriptor.from_file(f)
-        f.seek(descriptor.compressed_size, os.SEEK_CUR)

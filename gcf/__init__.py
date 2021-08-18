@@ -1,9 +1,7 @@
-import os
 import struct
 from typing import Iterable
 from enum import IntEnum, Flag, auto, unique
 from .vulkan import Format as VkFormat
-from .util import align_size
 
 
 class ContainerFlags(Flag):
@@ -75,6 +73,7 @@ class ResourceDescriptor:
     FORMAT_SIZE = struct.calcsize(FORMAT)
     TYPE_DATA_OFFSET = 14
     TYPE_DATA_SIZE = 18
+    TYPE_DATA_CUSTOM = object() # Used to indicate type data is handled by a subclass
 
     def __init__(
         self,
@@ -90,8 +89,10 @@ class ResourceDescriptor:
         self.format = format
         self.size = size
         self.supercompression_scheme = supercompression_scheme
-        self.type_data = type_data
         self.header = header
+
+        if type_data is not self.TYPE_DATA_CUSTOM:
+            self.type_data = type_data
 
     def serialize(self):
         return struct.pack(
@@ -125,84 +126,6 @@ class ResourceDescriptor:
         return cls.from_bytes(raw_descriptor, header)
 
 
-class ImageResourceDescriptor(ResourceDescriptor):
-    FORMAT = '=3H2BHQ'
-    FORMAT_SIZE = struct.calcsize(FORMAT)
-
-    def __init__(
-        self,
-        resource_type: ResourceType,
-        format: VkFormat,
-        size: int,
-        /,
-        header: Header,
-        width: int, height: int, depth: int = 1,
-        layer_count: int = 1, mip_level_count: int = 1,
-        supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NoCompression,
-        flags: int = 0,
-        type_data: int = 0
-    ):
-        super().__init__(
-            resource_type,
-            format,
-            size,
-            header=header,
-            supercompression_scheme=supercompression_scheme,
-            type_data=type_data
-        )
-
-        self.width = width
-        self.height = height
-        self.depth = depth
-        self.layer_count = layer_count
-        self.mip_level_count = mip_level_count
-        self.flags = flags
-
-    def serialize(self):
-        resource = super().serialize()
-        type_data = struct.pack(
-            self.FORMAT,
-            self.width, self.height, self.depth,
-            self.layer_count, self.mip_level_count,
-            self.flags
-        )
-
-        resource[self.TYPE_DATA_OFFSET:self.TYPE_DATA_OFFSET + self.TYPE_DATA_SIZE] = type_data
-
-        return resource
-
-    @classmethod
-    def from_resource_descriptor(cls, descriptor: ResourceDescriptor):
-        fields = struct.unpack(cls.FORMAT, descriptor.type_data)
-        width, height, depth = fields[0:3]
-        layer_count = fields[3]
-        mip_level_count = fields[4]
-        flags = fields[5]
-
-        return cls(
-            descriptor.resource_type, descriptor.format, descriptor.size,
-            width=width, height=height, depth=depth,
-            layer_count=layer_count,
-            mip_level_count=mip_level_count,
-            supercompression_scheme=descriptor.supercompression_scheme,
-            flags=flags,
-            type_data=descriptor.type_data,
-            header=descriptor.header
-        )
-
-    @classmethod
-    def from_file(cls, f, header: Header):
-        base_descriptor = ResourceDescriptor.from_file(f, header)
-
-        return cls.from_resource_descriptor(base_descriptor)
-
-    @classmethod
-    def from_bytes(cls, raw: bytes, header: Header):
-        base_descriptor = ResourceDescriptor.from_bytes(raw, header)
-
-        return cls.from_resource_descriptor(base_descriptor)
-
-
 class Resource:
     def __init__(self, descriptor: ResourceDescriptor):
         self.descriptor = descriptor
@@ -211,6 +134,8 @@ class Resource:
         raise RuntimeError('get_content_data() must be overridden.')
 
     def serialize(self):
+        from .util import align_size
+
         raw_content = self.get_content_data()
         self.descriptor.size = len(raw_content)
         raw_data = self.descriptor.serialize() + raw_content
@@ -225,18 +150,3 @@ class Resource:
         padding = b'\x00' * padding_size
 
         return raw_data + padding
-
-
-def skip_resources(f, n: int, header: Header):
-    """Skip the given number of resources from file."""
-    for _ in range(n):
-        descriptor = ResourceDescriptor.from_file(f, header)
-        f.seek(descriptor.size, os.SEEK_CUR)
-
-
-def decode_resource_descriptor(descriptor: ResourceDescriptor):
-    """Convert a generic resource descriptor into a more specific one depending on the resource type."""
-    if descriptor.resource_type == ResourceType.Image:
-        return ImageResourceDescriptor.from_resource_descriptor(descriptor)
-
-    return descriptor
