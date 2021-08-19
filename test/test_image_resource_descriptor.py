@@ -1,8 +1,7 @@
 import struct
 import io
 from .test_header import RES_HEADER
-from .test_resource_descriptor import RES_RESOURCE_DESCRIPTOR
-from gcf import Header, ResourceType, ResourceDescriptor, SupercompressionScheme
+from gcf import Header, ResourceType, SupercompressionScheme
 from gcf.image import ImageResourceDescriptor, ImageFlags
 from gcf.vulkan import Format
 

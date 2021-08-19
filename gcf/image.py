@@ -68,6 +68,12 @@ class MipLevelDescriptor:
 
 class MipLevel:
     def __init__(self, descriptor: MipLevelDescriptor, level_data: bytes):
+        '''Create a new mip level from compressed raw data.
+
+        ARGUMENTS:
+            descriptor - The mip level descriptor
+            level_data - The compressed data, as described in the descriptor
+        '''
         self.descriptor = descriptor
         self.data = level_data
 
@@ -78,12 +84,17 @@ class MipLevel:
         return self.descriptor.FORMAT_SIZE + len(self.data)
 
     @classmethod
-    def from_image_data(
-        cls,
-        data, supercompression: SupercompressionScheme, format: Format,
-        width: int, height: int, depth: int
-    ):
-        compressor = COMPRESSOR_TABLE[supercompression][0]
+    def from_image_data(cls, descriptor: 'ImageResourceDescriptor', data):
+        '''Create a new mip level from uncompressed image data.
+
+        ARGUMENTS:
+            data -  The uncompressed image data as a numpy array with shape [layers, depth, height, width, format_width]
+            descriptor -  The image resource descriptor
+
+        RETURN VALUE:
+            A new `ImageResource` object.
+        '''
+        compressor = COMPRESSOR_TABLE[descriptor.supercompression_scheme][0]
         flattened_data = data.flatten().tobytes()
         compressed_data = compressor(flattened_data)
         compressed_data_length = len(compressed_data)
@@ -94,9 +105,9 @@ class MipLevel:
         except KeyError as exc:
             raise ValueError(f'Unsupported format {format.name}.') from exc
 
-        row_stride = pixel_size * width
-        depth_stride = row_stride * height
-        layer_stride = depth_stride * depth
+        row_stride = pixel_size * descriptor.width
+        depth_stride = row_stride * descriptor.height
+        layer_stride = depth_stride * descriptor.depth
 
         descriptor = MipLevelDescriptor(
             compressed_data_length,
@@ -204,7 +215,8 @@ class ImageResource(Resource):
         if not self.mip_levels:
             raise ValueError('Should at least have one mip level.')
 
-    def get_content_data(self) -> bytes:
+    @property
+    def content_data(self) -> bytes:
         data = b''
 
         for mip_level in self.mip_levels:

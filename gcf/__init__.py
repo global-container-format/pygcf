@@ -130,13 +130,14 @@ class Resource:
     def __init__(self, descriptor: ResourceDescriptor):
         self.descriptor = descriptor
 
-    def get_content_data(self) -> bytes:
+    @property
+    def content_data(self) -> bytes:
         raise RuntimeError('get_content_data() must be overridden.')
 
     def serialize(self):
         from .util import align_size
 
-        raw_content = self.get_content_data()
+        raw_content = self.content_data
         self.descriptor.size = len(raw_content)
         raw_data = self.descriptor.serialize() + raw_content
 
