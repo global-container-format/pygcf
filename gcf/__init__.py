@@ -143,7 +143,7 @@ class Resource:
 
         if not ContainerFlags.Unpadded in self.descriptor.header.flags:
             raw_data_size = len(raw_data)
-            raw_data_size_aligned = align_size(raw_data_size, 64)
+            raw_data_size_aligned = align_size(raw_data_size, 8)
             padding_size = raw_data_size_aligned - raw_data_size
         else:
             padding_size = 0
