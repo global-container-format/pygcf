@@ -31,6 +31,15 @@ class MipLevelDescriptor:
         self.depth_stride = depth_stride
         self.layer_stride = layer_stride
 
+    def __eq__(self, o: object) -> bool:
+        return (
+            self.compressed_size == o.compressed_size
+            and self.uncompressed_size == o.uncompressed_size
+            and self.row_stride == o.row_stride
+            and self.depth_stride == o.depth_stride
+            and self.layer_stride == o.layer_stride
+        )
+
     def serialize(self) -> bytes:
         return struct.pack(
             self.FORMAT,
@@ -77,11 +86,28 @@ class MipLevel:
         self.descriptor = descriptor
         self.data = level_data
 
+    def __eq__(self, o: object) -> bool:
+        return self.descriptor == o.descriptor and self.data == o.data
+
     def serialize(self) -> bytes:
         return self.descriptor.serialize() + self.data
 
     def get_size(self) -> int:
         return self.descriptor.FORMAT_SIZE + len(self.data)
+
+    @classmethod
+    def from_bytes(cls, data: bytes):
+        descriptor = MipLevelDescriptor.from_bytes(data[:MipLevelDescriptor.FORMAT_SIZE])
+        level_data = data[MipLevelDescriptor.FORMAT_SIZE:]
+
+        return cls(descriptor, level_data)
+
+    @classmethod
+    def from_file(cls, f):
+        descriptor = MipLevelDescriptor.from_file(f)
+        level_data = f.read(descriptor.compressed_size)
+
+        return cls(descriptor, level_data)
 
     @classmethod
     def from_image_data(cls, descriptor: 'ImageResourceDescriptor', data):
@@ -149,6 +175,17 @@ class ImageResourceDescriptor(ResourceDescriptor):
         self.mip_level_count = mip_level_count
         self.flags = set(flags)
 
+    def __eq__(self, o: object) -> bool:
+        return (
+            super().__eq__(o)
+            and self.width == o.width
+            and self.height == o.height
+            and self.depth == o.depth
+            and self.layer_count == o.layer_count
+            and self.mip_level_count == o.mip_level_count
+            and self.flags == o.flags
+        )
+
     @property
     def type_data(self) -> bytes:
         raw_flags = reduce(lambda x, y: x | y, self.flags)
@@ -214,6 +251,12 @@ class ImageResource(Resource):
 
         if not self.mip_levels:
             raise ValueError('Should at least have one mip level.')
+
+    def __eq__(self, o: object) -> bool:
+        return (
+            super().__eq__(o)
+            and self.mip_levels ==  o.mip_levels
+        )
 
     @property
     def content_data(self) -> bytes:

@@ -1,6 +1,9 @@
 import io
-from gcf import Header
+import struct
+from gcf import Header, ResourceDescriptor, SupercompressionScheme
 from gcf.blob import BlobResource, BlobResourceDescriptor
+from gcf.image import ImageFlags, ImageResourceDescriptor, MipLevel, MipLevelDescriptor
+from gcf.vulkan import Format
 from gcf.util import *
 
 
@@ -36,3 +39,36 @@ def test_skip_resource():
     skip_resources(f, 1, h)
 
     assert f.tell() == len(raw_r1)
+
+
+def test_decode_resource_descriptor():
+    h = Header(2)
+    d_image = ResourceDescriptor(
+        ResourceType.Image,
+        Format.R8G8B8A8_UINT,
+        8,
+        header=h,
+        type_data=struct.pack('=3H2BHQ', 2, 1, 1, 1, 1, ImageFlags.Image2D.value, 0)
+    )
+    d_blob = ResourceDescriptor(
+        ResourceType.Blob,
+        Format.UNDEFINED,
+        8,
+        header=h,
+        type_data=struct.pack('=2QH', 2, 0, 0)
+    )
+
+    assert isinstance(decode_resource_descriptor(d_image), ImageResourceDescriptor)
+    assert isinstance(decode_resource_descriptor(d_blob), BlobResourceDescriptor)
+
+
+# def test_skip_mip_level():
+#     h = Header(2)
+#     ld = MipLevelDescriptor(100, 128, 10, 10, 1)
+#     l = MipLevel(ld, bytes(range(10)))
+#     l_raw = l.serialize()
+#     f = io.BytesIO(l_raw * 3)
+
+#     skip_mip_levels(f, 2)
+
+#     assert f.tell() == len(l_raw) * 2
