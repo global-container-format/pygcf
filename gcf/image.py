@@ -121,8 +121,8 @@ class MipLevel:
         '''Create a new mip level from uncompressed image data.
 
         ARGUMENTS:
-            data -  The uncompressed image data as a numpy array with shape [layers, depth, height, width, format_width]
             descriptor -  The image resource descriptor
+            data -  The uncompressed image data as a numpy array with shape [layers, depth, height, width, format_width]
             row_stride - The row stride or None to default to the size of a row
             depth_stride - The depth stride or None to default to the size of one image plane
             layer_stride - The layer stride or None to default to the size of one image layer
