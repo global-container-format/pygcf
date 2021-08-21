@@ -1,7 +1,7 @@
 import struct
 from functools import reduce
 from enum import IntFlag
-from typing import Iterable
+from typing import Iterable, Union
 from . import ResourceDescriptor, Resource, SupercompressionScheme, Header, ResourceType
 from .compress import COMPRESSOR_TABLE
 from .vulkan import Format, FORMAT_SIZE_TABLE
@@ -110,12 +110,22 @@ class MipLevel:
         return cls(descriptor, level_data)
 
     @classmethod
-    def from_image_data(cls, descriptor: 'ImageResourceDescriptor', data):
+    def from_image_data(
+        cls,
+        descriptor: 'ImageResourceDescriptor',
+        data,
+        row_stride: Union[int, None] = None,
+        depth_stride: Union[int, None] = None,
+        layer_stride: Union[int, None] = None
+    ) -> 'MipLevel':
         '''Create a new mip level from uncompressed image data.
 
         ARGUMENTS:
             data -  The uncompressed image data as a numpy array with shape [layers, depth, height, width, format_width]
             descriptor -  The image resource descriptor
+            row_stride - The row stride or None to default to the size of a row
+            depth_stride - The depth stride or None to default to the size of one image plane
+            layer_stride - The layer stride or None to default to the size of one image layer
 
         RETURN VALUE:
             A new `ImageResource` object.
@@ -127,21 +137,25 @@ class MipLevel:
         uncompressed_data_length = len(flattened_data)
 
         try:
-            pixel_size = FORMAT_SIZE_TABLE[format]
+            pixel_size = FORMAT_SIZE_TABLE[descriptor.format]
         except KeyError as exc:
-            raise ValueError(f'Unsupported format {format.name}.') from exc
+            raise ValueError(f'Unsupported format {descriptor.format.name}.') from exc
 
-        row_stride = pixel_size * descriptor.width
-        depth_stride = row_stride * descriptor.height
-        layer_stride = depth_stride * descriptor.depth
+        real_row_stride = row_stride or (pixel_size * descriptor.width)
+        real_depth_stride = depth_stride or (real_row_stride * descriptor.height)
+        real_layer_stride = layer_stride or (real_depth_stride * descriptor.depth)
+        expected_level_size = real_layer_stride * descriptor.layer_count
 
-        descriptor = MipLevelDescriptor(
+        if expected_level_size != uncompressed_data_length:
+            raise ValueError(f'Expected mip level size is {expected_level_size} but data is {uncompressed_data_length} bytes long.')
+
+        mip_level_descriptor = MipLevelDescriptor(
             compressed_data_length,
             uncompressed_data_length,
-            row_stride, depth_stride, layer_stride
+            real_row_stride, real_depth_stride, real_layer_stride
         )
 
-        return cls(descriptor, compressed_data)
+        return cls(mip_level_descriptor, compressed_data)
 
 
 class ImageResourceDescriptor(ResourceDescriptor):
@@ -157,7 +171,7 @@ class ImageResourceDescriptor(ResourceDescriptor):
         width: int, height: int, depth: int = 1,
         layer_count: int = 1, mip_level_count: int = 1,
         supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NoCompression,
-        flags: Iterable[ImageFlags] = 0
+        flags: Iterable[ImageFlags] = (ImageFlags.Image2D,)
     ):
         super().__init__(
             ResourceType.Image,
