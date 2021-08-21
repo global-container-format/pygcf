@@ -73,18 +73,31 @@ class BlobResource(Resource):
         return self.data
 
     @classmethod
-    def from_uncompressed_data(cls, descriptor: BlobResourceDescriptor, data: bytes):
+    def from_uncompressed_data(
+        cls,
+        data: bytes,
+        /,
+        header: Header,
+        supercompression_scheme: SupercompressionScheme
+    ):
         '''Create a new blob resource from uncompressed data.
 
         ARGUMENTS:
-            descriptor - The blob resource descriptor.
             data - The uncompressed data.
+            header - The header.
+            supercompression_scheme - The supercompression scheme.
 
         RETURN VALUE:
             A new blob resource object.
         '''
-        compressor = COMPRESSOR_TABLE[descriptor.supercompression_scheme][0]
-        flattened_data = data.flatten().tobytes()
-        compressed_data = compressor(flattened_data)
+        compressor = COMPRESSOR_TABLE[supercompression_scheme][0]
+        compressed_data = compressor(data)
+
+        descriptor = BlobResourceDescriptor(
+            len(compressed_data),
+            header=header,
+            uncompressed_size=len(data),
+            supercompression_scheme=supercompression_scheme
+        )
 
         return cls(descriptor, compressed_data)

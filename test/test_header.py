@@ -1,5 +1,6 @@
 import struct
 import io
+import pytest
 from gcf import Header, ContainerFlags
 
 
@@ -54,6 +55,11 @@ def test_from_bytes_noflags():
     assert h.resource_count == 5
     assert h.version == 99
     assert h.flags is not None and not h.flags
+
+
+def test_from_bytes_wrong_version():
+    with pytest.raises(ValueError):
+        h = Header.from_bytes(RES_HEADER, valid_version=88)
 
 
 def test_from_file():
