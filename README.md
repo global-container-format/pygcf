@@ -16,6 +16,11 @@ To get a coverage report, run:
 pytest --cov=gcf test
 ```
 
+## License
+
+See the [LICENSE](LICENSE) file.
+
+
 ## Bugs and feedback
 
 For bugs and feedback you can open an issue on the [GitHub repository](https://github.com/moongoal/pygcf).
