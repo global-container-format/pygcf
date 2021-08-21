@@ -57,9 +57,17 @@ def test_decode_resource_descriptor():
         header=h,
         type_data=struct.pack('=2QH', 2, 0, 0)
     )
+    d_res = ResourceDescriptor(
+        ResourceType.Test,
+        Format.UNDEFINED,
+        8,
+        header=h,
+        type_data=struct.pack('=2QH', 2, 0, 0)
+    )
 
     assert isinstance(decode_resource_descriptor(d_image), ImageResourceDescriptor)
     assert isinstance(decode_resource_descriptor(d_blob), BlobResourceDescriptor)
+    assert type(decode_resource_descriptor(d_res)).__name__ == ResourceDescriptor.__name__
 
 
 def test_skip_mip_level():
