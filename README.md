@@ -1,6 +1,6 @@
 # Global Container Format implementation for Python
 
-*pygcf* is a Python implementation of the [GCF format](https://github.com/moongoal/gcf-spec). It exposes a `gcf` package containing the tools required to read and write asset containers.
+*pygcf* is a Python implementation of the [GCF format](https://github.com/global-container-format/gcf-spec). It exposes a `gcf` package containing the tools required to read and write asset containers.
 
 ## Testing
 
