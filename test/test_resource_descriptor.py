@@ -30,7 +30,7 @@ def test_init():
 
     assert d.resource_type is ResourceType.Test
     assert d.format is Format.UNDEFINED
-    assert d.size is 128
+    assert d.size == 128
     assert d.supercompression_scheme is SupercompressionScheme.ZLib
     assert d.type_data == struct.pack('=18B', *range(18))
     assert d.header is h
@@ -56,7 +56,7 @@ def test_from_bytes():
 
     assert d.resource_type is ResourceType.Test
     assert d.format is Format.UNDEFINED
-    assert d.size is 128
+    assert d.size == 128
     assert d.supercompression_scheme is SupercompressionScheme.ZLib
     assert d.type_data == struct.pack('=18B', *range(18))
     assert d.header is h
@@ -69,7 +69,7 @@ def test_from_file():
 
     assert d.resource_type is ResourceType.Test
     assert d.format is Format.UNDEFINED
-    assert d.size is 128
+    assert d.size == 128
     assert d.supercompression_scheme is SupercompressionScheme.ZLib
     assert d.type_data == struct.pack('=18B', *range(18))
     assert d.header is h

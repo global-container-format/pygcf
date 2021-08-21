@@ -27,7 +27,7 @@ RES_IMAGE_RESOURCE_DESCRIPTOR = struct.pack(
 def verify_descriptor_assertions(d: ImageResourceDescriptor, h: Header):
     assert d.resource_type is ResourceType.Image
     assert d.format is Format.R8G8B8A8_UINT
-    assert d.size is 8
+    assert d.size == 8
     assert d.supercompression_scheme is SupercompressionScheme.ZLib
     assert d.type_data == RES_IMAGE_RESOURCE_DESCRIPTOR[
         ImageResourceDescriptor.TYPE_DATA_OFFSET

@@ -22,7 +22,7 @@ RES_BLOB_RESOURCE_DESCRIPTOR = struct.pack(
 def verify_descriptor_assertions(d: BlobResourceDescriptor, h: Header):
     assert d.resource_type is ResourceType.Blob
     assert d.format is Format.UNDEFINED
-    assert d.size is 8
+    assert d.size == 8
     assert d.supercompression_scheme is SupercompressionScheme.Deflate
     assert d.type_data == RES_BLOB_RESOURCE_DESCRIPTOR[
         BlobResourceDescriptor.TYPE_DATA_OFFSET
