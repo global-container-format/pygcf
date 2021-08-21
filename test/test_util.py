@@ -62,13 +62,12 @@ def test_decode_resource_descriptor():
     assert isinstance(decode_resource_descriptor(d_blob), BlobResourceDescriptor)
 
 
-# def test_skip_mip_level():
-#     h = Header(2)
-#     ld = MipLevelDescriptor(100, 128, 10, 10, 1)
-#     l = MipLevel(ld, bytes(range(10)))
-#     l_raw = l.serialize()
-#     f = io.BytesIO(l_raw * 3)
+def test_skip_mip_level():
+    ld = MipLevelDescriptor(100, 100, 10, 10, 1)
+    l = MipLevel(ld, bytes(range(100)))
+    l_raw = l.serialize()
+    f = io.BytesIO(l_raw * 3)
 
-#     skip_mip_levels(f, 2)
+    skip_mip_levels(f, 2)
 
-#     assert f.tell() == len(l_raw) * 2
+    assert f.tell() == len(l_raw) * 2

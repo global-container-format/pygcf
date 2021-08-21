@@ -53,7 +53,7 @@ class MipLevelDescriptor:
 
     @classmethod
     def from_bytes(cls, raw: bytes):
-        fields = struct.unpack(cls.FORMAT, raw)
+        fields = struct.unpack(cls.FORMAT, raw[:cls.FORMAT_SIZE])
         compressed_size = fields[0]
         uncompressed_size = fields[1]
         row_stride = fields[2]
