@@ -288,15 +288,10 @@ class Format(IntEnum):
 
 
 FORMAT_SIZE_TABLE = {}
-FORMAT_CONVERTERS = {}
-
-
-def register_converter(format: Format, converter):
-    FORMAT_CONVERTERS[format] = converter
 
 
 # Fill the format size table
-_member_size_rxp = re.compile('''[A-Z](\d+)''')
+_member_size_rxp = re.compile(r'''[A-Z](\d+)''')
 
 for member in Format.__members__:
     if member.endswith(('_UINT', '_SRGB')):
