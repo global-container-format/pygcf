@@ -1,9 +1,8 @@
-from numpy.lib.index_tricks import r_
 from gcf import Header
 import io
 import numpy as np
 import pytest
-from gcf.image import ImageResourceDescriptor, MipLevelDescriptor, MipLevel
+from gcf.image import ImageResourceDescriptor, MipLevelDescriptor, MipLevel, skip_mip_levels
 from gcf.vulkan import Format
 from .test_mip_level_descriptor import RES_MIP_LEVEL_DESCRIPTOR
 
@@ -53,7 +52,7 @@ def test_from_file():
 def test_from_image_data():
     h = Header(1)
     d = ImageResourceDescriptor(Format.R8G8B8_UINT, RES_MIP_LEVEL_IMAGE.nbytes, header=h, width=16, height=16)
-    l = MipLevel.from_image_data(d, RES_MIP_LEVEL_IMAGE)
+    l = MipLevel.from_image_data(d, RES_MIP_LEVEL_IMAGE, 0)
     r_bytes = RES_MIP_LEVEL_IMAGE.flatten().tobytes()
 
     assert l.data == r_bytes
@@ -69,7 +68,7 @@ def test_from_image_data_bad_format():
     d = ImageResourceDescriptor(Format.UNDEFINED, RES_MIP_LEVEL_IMAGE.nbytes, header=h, width=16, height=16)
 
     with pytest.raises(ValueError):
-        MipLevel.from_image_data(d, RES_MIP_LEVEL_IMAGE)
+        MipLevel.from_image_data(d, RES_MIP_LEVEL_IMAGE, 0)
 
 
 def test_from_image_data_bad_data():
@@ -77,4 +76,15 @@ def test_from_image_data_bad_data():
     d = ImageResourceDescriptor(Format.R8G8B8_UINT, RES_MIP_LEVEL_IMAGE.nbytes, header=h, width=16, height=16)
 
     with pytest.raises(ValueError):
-        MipLevel.from_image_data(d, np.zeros((1, 1, 1, 1, 3), dtype=np.uint8))
+        MipLevel.from_image_data(d, np.zeros((1, 1, 1, 1, 3), dtype=np.uint8), 0)
+
+
+def test_skip_mip_level():
+    ld = MipLevelDescriptor(100, 100, 10, 10, 1)
+    l = MipLevel(ld, bytes(range(100)))
+    l_raw = l.serialize()
+    f = io.BytesIO(l_raw * 3)
+
+    skip_mip_levels(f, 2)
+
+    assert f.tell() == len(l_raw) * 2
