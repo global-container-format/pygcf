@@ -9,17 +9,19 @@ from gcf.vulkan import Format
 # A an 2D image resource descriptor with format R8G8B8A8_UINT, width 2x1x1 with 1 layer and 1 mip level
 # super-compressed in ZLib format
 RES_IMAGE_RESOURCE_DESCRIPTOR = struct.pack(
-    '=3I4H2BHQ',
+    '=3I5H2BHIH',
     ResourceType.Image.value,
     Format.R8G8B8A8_UINT.value,
     8,
     SupercompressionScheme.ZLib.value,
+    0,
     2,
     1,
     1,
     1,
     1,
     ImageFlags.Image2D.value,
+    0,
     0
 )
 

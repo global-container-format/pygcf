@@ -170,7 +170,7 @@ class MipLevel:
 
 
 class ImageResourceDescriptor(ResourceDescriptor):
-    TYPE_DATA_FORMAT = '=3H2BHQ'
+    TYPE_DATA_FORMAT = '=3H2BHIH'
     TYPE_DATA_FORMAT_SIZE = struct.calcsize(TYPE_DATA_FORMAT)
 
     def __init__(
@@ -220,6 +220,7 @@ class ImageResourceDescriptor(ResourceDescriptor):
             self.width, self.height, self.depth,
             self.layer_count, self.mip_level_count,
             raw_flags,
+            0,
             0
         )
 

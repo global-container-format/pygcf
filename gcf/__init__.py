@@ -69,10 +69,11 @@ class Header:
 
 
 class ResourceDescriptor:
-    FORMAT = '=3IH'
+    TOTAL_RESOURCE_DESCRIPTOR_SIZE = 32 # Includes the basic resource descriptor + type data
+    FORMAT = '=3I2H'
     FORMAT_SIZE = struct.calcsize(FORMAT)
-    TYPE_DATA_OFFSET = 14
-    TYPE_DATA_SIZE = 18
+    TYPE_DATA_OFFSET = FORMAT_SIZE
+    TYPE_DATA_SIZE = TOTAL_RESOURCE_DESCRIPTOR_SIZE - FORMAT_SIZE
     TYPE_DATA_CUSTOM = object() # Used to indicate type data is handled by a subclass
 
     def __init__(
@@ -100,7 +101,8 @@ class ResourceDescriptor:
             self.resource_type,
             self.format,
             self.size,
-            self.supercompression_scheme
+            self.supercompression_scheme,
+            0
         ) + self.type_data
 
     @classmethod

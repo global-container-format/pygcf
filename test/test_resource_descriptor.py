@@ -8,12 +8,13 @@ from gcf.vulkan import Format
 # A resource descriptor of type Test, length 128 bytes, compressed with zlib and type-specific data a byte
 # array from 0 to 17 (inclusive)
 RES_RESOURCE_DESCRIPTOR = struct.pack(
-    '=3IH18B',
+    '=3I2H16B',
     ResourceType.Test.value,
     Format.UNDEFINED.value,
     128,
     SupercompressionScheme.ZLib.value,
-    *range(18)
+    0,
+    *range(16)
 )
 
 
@@ -25,14 +26,14 @@ def test_init():
         128,
         header=h,
         supercompression_scheme=SupercompressionScheme.ZLib,
-        type_data=struct.pack('=18B', *range(18))
+        type_data=struct.pack('=16B', *range(16))
     )
 
     assert d.resource_type is ResourceType.Test
     assert d.format is Format.UNDEFINED
     assert d.size == 128
     assert d.supercompression_scheme is SupercompressionScheme.ZLib
-    assert d.type_data == struct.pack('=18B', *range(18))
+    assert d.type_data == struct.pack('=16B', *range(16))
     assert d.header is h
 
 
@@ -44,7 +45,7 @@ def test_serialize():
         128,
         header=h,
         supercompression_scheme=SupercompressionScheme.ZLib,
-        type_data=struct.pack('=18B', *range(18))
+        type_data=struct.pack('=16B', *range(16))
     )
 
     assert d.serialize() == RES_RESOURCE_DESCRIPTOR
@@ -58,7 +59,7 @@ def test_from_bytes():
     assert d.format is Format.UNDEFINED
     assert d.size == 128
     assert d.supercompression_scheme is SupercompressionScheme.ZLib
-    assert d.type_data == struct.pack('=18B', *range(18))
+    assert d.type_data == struct.pack('=16B', *range(16))
     assert d.header is h
 
 
@@ -71,5 +72,5 @@ def test_from_file():
     assert d.format is Format.UNDEFINED
     assert d.size == 128
     assert d.supercompression_scheme is SupercompressionScheme.ZLib
-    assert d.type_data == struct.pack('=18B', *range(18))
+    assert d.type_data == struct.pack('=16B', *range(16))
     assert d.header is h

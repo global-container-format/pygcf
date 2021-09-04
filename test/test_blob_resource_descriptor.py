@@ -8,13 +8,13 @@ from gcf.vulkan import Format
 
 # A deflate-compressed blob resource 128 bytes long uncompressed, 8 bytes long compressed
 RES_BLOB_RESOURCE_DESCRIPTOR = struct.pack(
-    '=3IH2QH',
+    '=3I2H2Q',
     ResourceType.Blob.value,
     Format.UNDEFINED.value,
     8,
     SupercompressionScheme.Deflate.value,
-    128,
     0,
+    128,
     0
 )
 

@@ -5,7 +5,7 @@ from .vulkan import Format
 
 
 class BlobResourceDescriptor(ResourceDescriptor):
-    TYPE_DATA_FORMAT = '=2QH'
+    TYPE_DATA_FORMAT = '=2Q'
     TYPE_DATA_FORMAT_SIZE = struct.calcsize(TYPE_DATA_FORMAT)
 
     def __init__(
@@ -29,7 +29,7 @@ class BlobResourceDescriptor(ResourceDescriptor):
 
     @property
     def type_data(self):
-        return struct.pack(self.TYPE_DATA_FORMAT, self.uncompressed_size, 0, 0)
+        return struct.pack(self.TYPE_DATA_FORMAT, self.uncompressed_size, 0)
 
     @classmethod
     def from_resource_descriptor(cls, descriptor: ResourceDescriptor):
