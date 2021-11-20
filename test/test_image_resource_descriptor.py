@@ -1,5 +1,7 @@
 import struct
 import io
+import pytest
+from itertools import combinations, chain
 from .test_header import RES_HEADER
 from gcf import Header, ResourceType, SupercompressionScheme
 from gcf.image import ImageResourceDescriptor, ImageFlags
@@ -88,3 +90,89 @@ def test_from_file():
     d = ImageResourceDescriptor.from_file(f, h)
 
     verify_descriptor_assertions(d, h)
+
+
+def test_no_dimensionality_specified():
+    h = Header.from_bytes(RES_HEADER, valid_version=99)
+
+    with pytest.raises(ValueError):
+        ImageResourceDescriptor(
+            Format.R8G8B8A8_UINT,
+            8,
+            header=h,
+            width=2,
+            height=1,
+            supercompression_scheme=SupercompressionScheme.ZLib,
+            flags=[]
+        )
+
+
+def test_multiple_dimensionality_specified():
+    h = Header.from_bytes(RES_HEADER, valid_version=99)
+    combs = lambda n: combinations([ImageFlags.Image1D, ImageFlags.Image2D, ImageFlags.Image3D], n)
+
+    for x in chain(combs(2), combs(3)):
+        with pytest.raises(ValueError):
+            ImageResourceDescriptor(
+                Format.R8G8B8A8_UINT,
+                8,
+                header=h,
+                width=2,
+                height=1,
+                supercompression_scheme=SupercompressionScheme.ZLib,
+                flags=[ImageFlags]
+            )
+
+
+def test_dimensions_1d():
+    h = Header.from_bytes(RES_HEADER, valid_version=99)
+    d = ImageResourceDescriptor(
+        Format.R8G8B8A8_UINT,
+        8,
+        header=h,
+        width=10,
+        height=10,
+        depth=10,
+        supercompression_scheme=SupercompressionScheme.ZLib,
+        flags=[ImageFlags.Image1D]
+    )
+
+    assert d.width == 10
+    assert d.height == 1
+    assert d.depth == 1
+
+
+def test_dimensions_2d():
+    h = Header.from_bytes(RES_HEADER, valid_version=99)
+    d = ImageResourceDescriptor(
+        Format.R8G8B8A8_UINT,
+        8,
+        header=h,
+        width=10,
+        height=10,
+        depth=10,
+        supercompression_scheme=SupercompressionScheme.ZLib,
+        flags=[ImageFlags.Image2D]
+    )
+
+    assert d.width == 10
+    assert d.height == 10
+    assert d.depth == 1
+
+
+def test_dimensions_3d():
+    h = Header.from_bytes(RES_HEADER, valid_version=99)
+    d = ImageResourceDescriptor(
+        Format.R8G8B8A8_UINT,
+        8,
+        header=h,
+        width=10,
+        height=10,
+        depth=10,
+        supercompression_scheme=SupercompressionScheme.ZLib,
+        flags=[ImageFlags.Image3D]
+    )
+
+    assert d.width == 10
+    assert d.height == 10
+    assert d.depth == 10

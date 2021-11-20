@@ -179,7 +179,7 @@ class ImageResourceDescriptor(ResourceDescriptor):
         size: int,
         /,
         header: Header,
-        width: int, height: int, depth: int = 1,
+        width: int, height: int = 1, depth: int = 1,
         layer_count: int = 1, mip_level_count: int = 1,
         supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NoCompression,
         flags: Iterable[ImageFlags] = (ImageFlags.Image2D,)
@@ -193,12 +193,16 @@ class ImageResourceDescriptor(ResourceDescriptor):
             type_data=self.TYPE_DATA_CUSTOM
         )
 
+        self.flags = set(flags)
+
+        if len(set((ImageFlags.Image1D, ImageFlags.Image2D, ImageFlags.Image3D)) & self.flags) != 1:
+            raise ValueError('Image flags must specify exactly once if the image is 1, 2 or 3D.')
+
         self.width = width
-        self.height = height
-        self.depth = depth
+        self.height = height if ImageFlags.Image1D not in self.flags else 1
+        self.depth = depth if ImageFlags.Image3D in self.flags else 1
         self.layer_count = layer_count
         self.mip_level_count = mip_level_count
-        self.flags = set(flags)
 
     def __eq__(self, o: object) -> bool:
         return (
