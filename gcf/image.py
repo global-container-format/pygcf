@@ -95,15 +95,17 @@ class MipLevel:
 
     @classmethod
     def from_bytes(cls, data: bytes):
+        """Create a new mip level from a bytes object."""
         descriptor = MipLevelDescriptor.from_bytes(data[: MipLevelDescriptor.FORMAT_SIZE])
         level_data = data[MipLevelDescriptor.FORMAT_SIZE :]
 
         return cls(descriptor, level_data)
 
     @classmethod
-    def from_file(cls, f):
-        descriptor = MipLevelDescriptor.from_file(f)
-        level_data = f.read(descriptor.compressed_size)
+    def from_file(cls, fileobj):
+        """Create a new mip level from file."""
+        descriptor = MipLevelDescriptor.from_file(fileobj)
+        level_data = fileobj.read(descriptor.compressed_size)
 
         return cls(descriptor, level_data)
 
@@ -116,7 +118,7 @@ class MipLevel:
         row_stride: Union[int, None] = None,
         depth_stride: Union[int, None] = None,
         layer_stride: Union[int, None] = None,
-    ) -> "MipLevel":
+    ) -> "MipLevel":  # pylint: disable=too-many-locals, too-many-arguments
         """Create a new mip level from uncompressed image data.
 
         ARGUMENTS:
@@ -167,12 +169,13 @@ class MipLevel:
 
 
 class ImageResourceDescriptor(ResourceDescriptor):
+    """Image resource descriptor."""
     TYPE_DATA_FORMAT = "=3H2BHIH"
     TYPE_DATA_FORMAT_SIZE = struct.calcsize(TYPE_DATA_FORMAT)
 
     def __init__(
         self,
-        format: Format,
+        resource_format: Format,
         size: int,
         /,
         header: Header,
@@ -183,10 +186,10 @@ class ImageResourceDescriptor(ResourceDescriptor):
         mip_level_count: int = 1,
         supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NO_COMPRESSION,
         flags: Iterable[ImageFlags] = (ImageFlags.Image2D,),
-    ):
+    ): # pylint: disable=too-many-arguments
         super().__init__(
             ResourceType.IMAGE,
-            format,
+            resource_format,
             size,
             header=header,
             supercompression_scheme=supercompression_scheme,
@@ -204,19 +207,20 @@ class ImageResourceDescriptor(ResourceDescriptor):
         self.layer_count = layer_count
         self.mip_level_count = mip_level_count
 
-    def __eq__(self, o: object) -> bool:
+    def __eq__(self, obj: object) -> bool:
         return (
-            super().__eq__(o)
-            and self.width == o.width
-            and self.height == o.height
-            and self.depth == o.depth
-            and self.layer_count == o.layer_count
-            and self.mip_level_count == o.mip_level_count
-            and self.flags == o.flags
+            super().__eq__(obj)
+            and self.width == obj.width
+            and self.height == obj.height
+            and self.depth == obj.depth
+            and self.layer_count == obj.layer_count
+            and self.mip_level_count == obj.mip_level_count
+            and self.flags == obj.flags
         )
 
     @property
     def type_data(self) -> bytes:
+        """Return the resource type information."""
         raw_flags = reduce(lambda x, y: x | y, self.flags)
 
         return struct.pack(
@@ -237,15 +241,16 @@ class ImageResourceDescriptor(ResourceDescriptor):
 
         # The Image[1,2,3]D flags share the same bits; only one should be
         # allowed.
-        for f in (ImageFlags.Image3D, ImageFlags.Image2D, ImageFlags.Image1D):
-            if raw_flags & f.value == f.value:
-                flags.add(f)
+        for curflag in (ImageFlags.Image3D, ImageFlags.Image2D, ImageFlags.Image1D):
+            if raw_flags & curflag.value == curflag.value:
+                flags.add(curflag)
                 break
 
         return flags
 
     @classmethod
     def from_resource_descriptor(cls, descriptor: ResourceDescriptor):
+        """Create an image resource from a resource descriptor."""
         fields = struct.unpack(cls.TYPE_DATA_FORMAT, descriptor.type_data)
         width, height, depth = fields[0:3]
         layer_count = fields[3]
@@ -267,8 +272,8 @@ class ImageResourceDescriptor(ResourceDescriptor):
         )
 
     @classmethod
-    def from_file(cls, f, header: Header):
-        base_descriptor = ResourceDescriptor.from_file(f, header)
+    def from_file(cls, fileobj, header: Header):
+        base_descriptor = ResourceDescriptor.from_file(fileobj, header)
 
         return cls.from_resource_descriptor(base_descriptor)
 
@@ -280,6 +285,8 @@ class ImageResourceDescriptor(ResourceDescriptor):
 
 
 class ImageResource(Resource):
+    """Image resource."""
+
     def __init__(self, descriptor: ResourceDescriptor, mip_levels: Iterable[MipLevel]):
         super().__init__(descriptor)
 
@@ -288,8 +295,8 @@ class ImageResource(Resource):
         if not self.mip_levels:
             raise ValueError("Should at least have one mip level.")
 
-    def __eq__(self, o: object) -> bool:
-        return super().__eq__(o) and self.mip_levels == o.mip_levels
+    def __eq__(self, obj: object) -> bool:
+        return super().__eq__(obj) and self.mip_levels == obj.mip_levels
 
     @property
     def content_data(self) -> bytes:
@@ -301,8 +308,8 @@ class ImageResource(Resource):
         return data
 
 
-def skip_mip_levels(f, n: int):
+def skip_mip_levels(fileobj, num_lines: int):
     """Skip the given number of mip levels from file."""
-    for _ in range(n):
-        descriptor = MipLevelDescriptor.from_file(f)
-        f.seek(descriptor.compressed_size, os.SEEK_CUR)
+    for _ in range(num_lines):
+        descriptor = MipLevelDescriptor.from_file(fileobj)
+        fileobj.seek(descriptor.compressed_size, os.SEEK_CUR)

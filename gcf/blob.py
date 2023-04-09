@@ -1,3 +1,8 @@
+"""
+Blob resource.
+
+Spec: https://github.com/global-container-format/gcf-spec/blob/master/resources/blob.md
+"""
 import struct
 
 from . import Header, Resource, ResourceDescriptor, ResourceType, SupercompressionScheme
@@ -6,6 +11,7 @@ from .vulkan import Format
 
 
 class BlobResourceDescriptor(ResourceDescriptor):
+    """A blob resource descriptor."""
     TYPE_DATA_FORMAT = "=2Q"
     TYPE_DATA_FORMAT_SIZE = struct.calcsize(TYPE_DATA_FORMAT)
 
@@ -17,6 +23,7 @@ class BlobResourceDescriptor(ResourceDescriptor):
         uncompressed_size: int,
         supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NO_COMPRESSION,
     ):
+        """Create a new blob resource descriptor."""
         super().__init__(
             ResourceType.BLOB,
             Format.UNDEFINED,
@@ -30,10 +37,12 @@ class BlobResourceDescriptor(ResourceDescriptor):
 
     @property
     def type_data(self):
+        """Return the blob descriptor's type info."""
         return struct.pack(self.TYPE_DATA_FORMAT, self.uncompressed_size, 0)
 
     @classmethod
     def from_resource_descriptor(cls, descriptor: ResourceDescriptor):
+        """Create a blob descriptor from a resource descriptor."""
         fields = struct.unpack(cls.TYPE_DATA_FORMAT, descriptor.type_data)
         uncompressed_size = fields[0]
 
@@ -51,13 +60,15 @@ class BlobResourceDescriptor(ResourceDescriptor):
         return cls.from_resource_descriptor(base_descriptor)
 
     @classmethod
-    def from_file(cls, f, header: Header):
-        base_descriptor = ResourceDescriptor.from_file(f, header)
+    def from_file(cls, fileobj, header: Header):
+        base_descriptor = ResourceDescriptor.from_file(fileobj, header)
 
         return cls.from_resource_descriptor(base_descriptor)
 
 
 class BlobResource(Resource):
+    """A blob resource."""
+
     def __init__(self, descriptor: BlobResourceDescriptor, data: bytes):
         """Create a new blob resource from compressed data.
 
