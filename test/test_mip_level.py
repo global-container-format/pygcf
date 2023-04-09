@@ -9,7 +9,7 @@ from gcf.vulkan import Format
 
 from .test_mip_level_descriptor import RES_MIP_LEVEL_DESCRIPTOR
 
-RES_MIP_LEVEL_DATA = b'\0' * (16 * 8 * 8)
+RES_MIP_LEVEL_DATA = b"\0" * (16 * 8 * 8)
 RES_MIP_LEVEL = RES_MIP_LEVEL_DESCRIPTOR + RES_MIP_LEVEL_DATA
 
 # A mip level image as a numpy array with 1 layer, size 16x1x1, RGB UINT format with 8 bits per channel.

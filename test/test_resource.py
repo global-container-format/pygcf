@@ -40,7 +40,7 @@ def test_serialize_with_padding():
     raw_descriptor = d.serialize()
     raw_resource = r.serialize()
 
-    assert raw_resource == raw_descriptor + r.content_data + b'\0'
+    assert raw_resource == raw_descriptor + r.content_data + b"\0"
 
 
 def test_serialize_unpadded():

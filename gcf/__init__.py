@@ -11,36 +11,41 @@ class ContainerFlags(Flag):
 
 @unique
 class SupercompressionScheme(IntEnum):
-    NoCompression = 0,
-    ZLib = 1,
-    Deflate = 2,
-    Test = 0xffff
+    NoCompression = (0,)
+    ZLib = (1,)
+    Deflate = (2,)
+    Test = 0xFFFF
 
 
 @unique
 class ResourceType(IntEnum):
-    Blob = 0,
-    Image = 1,
-    Test = 0xffffffff
+    Blob = (0,)
+    Image = (1,)
+    Test = 0xFFFFFFFF
 
 
 class Header:
     DEFAULT_VERSION = 2
-    MAGIC_PREFIX = 'GC'
-    FORMAT = '=4BHH'
+    MAGIC_PREFIX = "GC"
+    FORMAT = "=4BHH"
     FORMAT_SIZE = struct.calcsize(FORMAT)
 
-    def __init__(self, resource_count: int, flags: Iterable[ContainerFlags] = None, version: int = None):
+    def __init__(
+        self,
+        resource_count: int,
+        flags: Iterable[ContainerFlags] = None,
+        version: int = None,
+    ):
         self.resource_count = resource_count
         self.version = version or self.DEFAULT_VERSION
         self.flags = set(flags or ())
 
     @classmethod
     def _make_valid_version(cls, version_number):
-        return '{}{:02d}'.format(cls.MAGIC_PREFIX, version_number)
+        return "{}{:02d}".format(cls.MAGIC_PREFIX, version_number)
 
     def serialize(self) -> bytes:
-        magic = self._make_valid_version(self.version).encode('ascii')
+        magic = self._make_valid_version(self.version).encode("ascii")
         flags = 0
 
         for x in self.flags:
@@ -52,7 +57,7 @@ class Header:
     def from_bytes(cls, raw: bytes, /, valid_version=DEFAULT_VERSION):
         *magic, resource_count, raw_flags = struct.unpack(cls.FORMAT, raw)
 
-        magic = ''.join(map(chr, magic))
+        magic = "".join(map(chr, magic))
         valid_magic = cls._make_valid_version(valid_version)
 
         if magic != valid_magic:
@@ -70,12 +75,12 @@ class Header:
 
 
 class ResourceDescriptor:
-    TOTAL_RESOURCE_DESCRIPTOR_SIZE = 32 # Includes the basic resource descriptor + type data
-    FORMAT = '=3I2H'
+    TOTAL_RESOURCE_DESCRIPTOR_SIZE = 32  # Includes the basic resource descriptor + type data
+    FORMAT = "=3I2H"
     FORMAT_SIZE = struct.calcsize(FORMAT)
     TYPE_DATA_OFFSET = FORMAT_SIZE
     TYPE_DATA_SIZE = TOTAL_RESOURCE_DESCRIPTOR_SIZE - FORMAT_SIZE
-    TYPE_DATA_CUSTOM = object() # Used to indicate type data is handled by a subclass
+    TYPE_DATA_CUSTOM = object()  # Used to indicate type data is handled by a subclass
 
     def __init__(
         self,
@@ -85,7 +90,7 @@ class ResourceDescriptor:
         /,
         header: Header,
         supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NoCompression,
-        type_data: bytes = b'\x00' * TYPE_DATA_SIZE
+        type_data: bytes = b"\x00" * TYPE_DATA_SIZE,
     ):
         self.resource_type = resource_type
         self.format = format
@@ -97,29 +102,34 @@ class ResourceDescriptor:
             self.type_data = type_data
 
     def serialize(self):
-        return struct.pack(
-            self.FORMAT,
-            self.resource_type,
-            self.format,
-            self.size,
-            self.supercompression_scheme,
-            0
-        ) + self.type_data
+        return (
+            struct.pack(
+                self.FORMAT,
+                self.resource_type,
+                self.format,
+                self.size,
+                self.supercompression_scheme,
+                0,
+            )
+            + self.type_data
+        )
 
     @classmethod
     def from_bytes(cls, raw: bytes, header: Header):
-        fields = struct.unpack(cls.FORMAT, raw[:cls.TYPE_DATA_OFFSET])
+        fields = struct.unpack(cls.FORMAT, raw[: cls.TYPE_DATA_OFFSET])
         resource_type = ResourceType(fields[0])
         format = VkFormat(fields[1])
         size = fields[2]
         supercompression_scheme = SupercompressionScheme(fields[3])
-        type_data = raw[cls.TYPE_DATA_OFFSET:]
+        type_data = raw[cls.TYPE_DATA_OFFSET :]
 
         return cls(
-            resource_type, format, size,
+            resource_type,
+            format,
+            size,
             supercompression_scheme=supercompression_scheme,
             type_data=type_data,
-            header=header
+            header=header,
         )
 
     @classmethod
@@ -135,7 +145,7 @@ class Resource:
 
     @property
     def content_data(self) -> bytes:
-        raise RuntimeError('get_content_data() must be overridden.')
+        raise RuntimeError("get_content_data() must be overridden.")
 
     def serialize(self):
         from .util import align_size
@@ -151,6 +161,6 @@ class Resource:
         else:
             padding_size = 0
 
-        padding = b'\x00' * padding_size
+        padding = b"\x00" * padding_size
 
         return raw_data + padding

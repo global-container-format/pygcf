@@ -41,5 +41,5 @@ COMPRESSOR_TABLE = {
     SupercompressionScheme.ZLib: (compress_zlib, decompress_zlib),
     SupercompressionScheme.Deflate: (compress_deflate, decompress_deflate),
     # Deflate chosen to minimize test data size. Doesn't make any difference as "test" is not a valid supercompression scheme
-    SupercompressionScheme.Test: (compress_deflate, decompress_deflate)
+    SupercompressionScheme.Test: (compress_deflate, decompress_deflate),
 }

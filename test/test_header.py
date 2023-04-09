@@ -6,8 +6,8 @@ import pytest
 from gcf import ContainerFlags, Header
 
 # Example header with version 99, 5 resources and `Unpadded` flag
-RES_HEADER = b'GC99' + struct.pack('=2H', 5, ContainerFlags.Unpadded.value)
-RES_HEADER_NOFLAGS = b'GC99' + struct.pack('=2H', 5, 0)
+RES_HEADER = b"GC99" + struct.pack("=2H", 5, ContainerFlags.Unpadded.value)
+RES_HEADER_NOFLAGS = b"GC99" + struct.pack("=2H", 5, 0)
 
 
 def test_init():

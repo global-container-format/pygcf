@@ -4,6 +4,7 @@ from enum import IntEnum
 
 class Format(IntEnum):
     """From Vulkan Spec 1.2.186."""
+
     UNDEFINED = 0
     R4G4_UNORM_PACK8 = 1
     R4G4B4A4_UNORM_PACK16 = 2
@@ -291,10 +292,10 @@ FORMAT_SIZE_TABLE = {}
 
 
 # Fill the format size table
-_member_size_rxp = re.compile(r'''[A-Z](\d+)''')
+_member_size_rxp = re.compile(r"""[A-Z](\d+)""")
 
 for member in Format.__members__:
-    if member.endswith(('_UINT', '_SRGB')):
+    if member.endswith(("_UINT", "_SRGB")):
         matches = _member_size_rxp.findall(member)
 
         if matches:
@@ -303,4 +304,4 @@ for member in Format.__members__:
 
             FORMAT_SIZE_TABLE[getattr(Format, member)] = format_size
         else:
-            raise RuntimeWarning(f'Member {member} did not match.')
+            raise RuntimeWarning(f"Member {member} did not match.")

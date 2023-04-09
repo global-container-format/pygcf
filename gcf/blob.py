@@ -6,7 +6,7 @@ from .vulkan import Format
 
 
 class BlobResourceDescriptor(ResourceDescriptor):
-    TYPE_DATA_FORMAT = '=2Q'
+    TYPE_DATA_FORMAT = "=2Q"
     TYPE_DATA_FORMAT_SIZE = struct.calcsize(TYPE_DATA_FORMAT)
 
     def __init__(
@@ -15,7 +15,7 @@ class BlobResourceDescriptor(ResourceDescriptor):
         /,
         header: Header,
         uncompressed_size: int,
-        supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NoCompression
+        supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NoCompression,
     ):
         super().__init__(
             ResourceType.Blob,
@@ -23,7 +23,7 @@ class BlobResourceDescriptor(ResourceDescriptor):
             size,
             header=header,
             supercompression_scheme=supercompression_scheme,
-            type_data=self.TYPE_DATA_CUSTOM
+            type_data=self.TYPE_DATA_CUSTOM,
         )
 
         self.uncompressed_size = uncompressed_size
@@ -41,7 +41,7 @@ class BlobResourceDescriptor(ResourceDescriptor):
             descriptor.size,
             uncompressed_size=uncompressed_size,
             supercompression_scheme=descriptor.supercompression_scheme,
-            header=descriptor.header
+            header=descriptor.header,
         )
 
     @classmethod
@@ -59,12 +59,12 @@ class BlobResourceDescriptor(ResourceDescriptor):
 
 class BlobResource(Resource):
     def __init__(self, descriptor: BlobResourceDescriptor, data: bytes):
-        '''Create a new blob resource from compressed data.
+        """Create a new blob resource from compressed data.
 
         ARGUMENTS:
             descriptor - The blob resource descriptor.
             data - The compressed data.
-        '''
+        """
         super().__init__(descriptor)
 
         self.data = data
@@ -79,9 +79,9 @@ class BlobResource(Resource):
         data: bytes,
         /,
         header: Header,
-        supercompression_scheme: SupercompressionScheme
+        supercompression_scheme: SupercompressionScheme,
     ):
-        '''Create a new blob resource from uncompressed data.
+        """Create a new blob resource from uncompressed data.
 
         ARGUMENTS:
             data - The uncompressed data.
@@ -90,7 +90,7 @@ class BlobResource(Resource):
 
         RETURN VALUE:
             A new blob resource object.
-        '''
+        """
         compressor = COMPRESSOR_TABLE[supercompression_scheme][0]
         compressed_data = compressor(data)
 
@@ -98,7 +98,7 @@ class BlobResource(Resource):
             len(compressed_data),
             header=header,
             uncompressed_size=len(data),
-            supercompression_scheme=supercompression_scheme
+            supercompression_scheme=supercompression_scheme,
         )
 
         return cls(descriptor, compressed_data)

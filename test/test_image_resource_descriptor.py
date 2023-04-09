@@ -13,7 +13,7 @@ from .test_header import RES_HEADER
 # A an 2D image resource descriptor with format R8G8B8A8_UINT, width 2x1x1 with 1 layer and 1 mip level
 # super-compressed in ZLib format
 RES_IMAGE_RESOURCE_DESCRIPTOR = struct.pack(
-    '=3I5H2BHIH',
+    "=3I5H2BHIH",
     ResourceType.Image.value,
     Format.R8G8B8A8_UINT.value,
     8,
@@ -26,7 +26,7 @@ RES_IMAGE_RESOURCE_DESCRIPTOR = struct.pack(
     1,
     ImageFlags.Image2D.value,
     0,
-    0
+    0,
 )
 
 
@@ -35,10 +35,13 @@ def verify_descriptor_assertions(d: ImageResourceDescriptor, h: Header):
     assert d.format is Format.R8G8B8A8_UINT
     assert d.size == 8
     assert d.supercompression_scheme is SupercompressionScheme.ZLib
-    assert d.type_data == RES_IMAGE_RESOURCE_DESCRIPTOR[
-        ImageResourceDescriptor.TYPE_DATA_OFFSET
-        :ImageResourceDescriptor.TYPE_DATA_OFFSET + ImageResourceDescriptor.TYPE_DATA_SIZE
-    ]
+    assert (
+        d.type_data
+        == RES_IMAGE_RESOURCE_DESCRIPTOR[
+            ImageResourceDescriptor.TYPE_DATA_OFFSET : ImageResourceDescriptor.TYPE_DATA_OFFSET
+            + ImageResourceDescriptor.TYPE_DATA_SIZE
+        ]
+    )
     assert d.header is h
     assert d.width == 2
     assert d.height == 1
@@ -58,7 +61,7 @@ def test_init():
         width=2,
         height=1,
         supercompression_scheme=SupercompressionScheme.ZLib,
-        flags=[ImageFlags.Image2D]
+        flags=[ImageFlags.Image2D],
     )
 
     verify_descriptor_assertions(d, h)
@@ -73,7 +76,7 @@ def test_serialize():
         width=2,
         height=1,
         supercompression_scheme=SupercompressionScheme.ZLib,
-        flags=[ImageFlags.Image2D]
+        flags=[ImageFlags.Image2D],
     )
 
     assert d.serialize() == RES_IMAGE_RESOURCE_DESCRIPTOR
@@ -105,7 +108,7 @@ def test_no_dimensionality_specified():
             width=2,
             height=1,
             supercompression_scheme=SupercompressionScheme.ZLib,
-            flags=[]
+            flags=[],
         )
 
 
@@ -122,7 +125,7 @@ def test_multiple_dimensionality_specified():
                 width=2,
                 height=1,
                 supercompression_scheme=SupercompressionScheme.ZLib,
-                flags=[ImageFlags]
+                flags=[ImageFlags],
             )
 
 
@@ -136,7 +139,7 @@ def test_dimensions_1d():
         height=10,
         depth=10,
         supercompression_scheme=SupercompressionScheme.ZLib,
-        flags=[ImageFlags.Image1D]
+        flags=[ImageFlags.Image1D],
     )
 
     assert d.width == 10
@@ -154,7 +157,7 @@ def test_dimensions_2d():
         height=10,
         depth=10,
         supercompression_scheme=SupercompressionScheme.ZLib,
-        flags=[ImageFlags.Image2D]
+        flags=[ImageFlags.Image2D],
     )
 
     assert d.width == 10
@@ -172,7 +175,7 @@ def test_dimensions_3d():
         height=10,
         depth=10,
         supercompression_scheme=SupercompressionScheme.ZLib,
-        flags=[ImageFlags.Image3D]
+        flags=[ImageFlags.Image3D],
     )
 
     assert d.width == 10

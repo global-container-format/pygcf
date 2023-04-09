@@ -14,21 +14,21 @@ def test_decode_resource_descriptor():
         Format.R8G8B8A8_UINT,
         8,
         header=h,
-        type_data=struct.pack('=3H2BHIH', 2, 1, 1, 1, 1, ImageFlags.Image2D.value, 0, 0)
+        type_data=struct.pack("=3H2BHIH", 2, 1, 1, 1, 1, ImageFlags.Image2D.value, 0, 0),
     )
     d_blob = ResourceDescriptor(
         ResourceType.Blob,
         Format.UNDEFINED,
         8,
         header=h,
-        type_data=struct.pack('=2Q', 2, 0)
+        type_data=struct.pack("=2Q", 2, 0),
     )
     d_res = ResourceDescriptor(
         ResourceType.Test,
         Format.UNDEFINED,
         8,
         header=h,
-        type_data=struct.pack('=2Q', 2, 0)
+        type_data=struct.pack("=2Q", 2, 0),
     )
 
     assert isinstance(decode_resource_descriptor(d_image), ImageResourceDescriptor)

@@ -9,14 +9,14 @@ from .test_header import RES_HEADER
 
 # A deflate-compressed blob resource 128 bytes long uncompressed, 8 bytes long compressed
 RES_BLOB_RESOURCE_DESCRIPTOR = struct.pack(
-    '=3I2H2Q',
+    "=3I2H2Q",
     ResourceType.Blob.value,
     Format.UNDEFINED.value,
     8,
     SupercompressionScheme.Deflate.value,
     0,
     128,
-    0
+    0,
 )
 
 
@@ -25,10 +25,13 @@ def verify_descriptor_assertions(d: BlobResourceDescriptor, h: Header):
     assert d.format is Format.UNDEFINED
     assert d.size == 8
     assert d.supercompression_scheme is SupercompressionScheme.Deflate
-    assert d.type_data == RES_BLOB_RESOURCE_DESCRIPTOR[
-        BlobResourceDescriptor.TYPE_DATA_OFFSET
-        :BlobResourceDescriptor.TYPE_DATA_OFFSET + BlobResourceDescriptor.TYPE_DATA_SIZE
-    ]
+    assert (
+        d.type_data
+        == RES_BLOB_RESOURCE_DESCRIPTOR[
+            BlobResourceDescriptor.TYPE_DATA_OFFSET : BlobResourceDescriptor.TYPE_DATA_OFFSET
+            + BlobResourceDescriptor.TYPE_DATA_SIZE
+        ]
+    )
     assert d.header is h
     assert d.uncompressed_size == 128
 
@@ -39,7 +42,7 @@ def test_init():
         8,
         header=h,
         uncompressed_size=128,
-        supercompression_scheme=SupercompressionScheme.Deflate
+        supercompression_scheme=SupercompressionScheme.Deflate,
     )
 
     verify_descriptor_assertions(d, h)
@@ -51,7 +54,7 @@ def test_serialize():
         8,
         header=h,
         uncompressed_size=128,
-        supercompression_scheme=SupercompressionScheme.Deflate
+        supercompression_scheme=SupercompressionScheme.Deflate,
     )
 
     assert d.serialize() == RES_BLOB_RESOURCE_DESCRIPTOR

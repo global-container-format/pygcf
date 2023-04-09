@@ -5,7 +5,7 @@ from . import Header, ResourceDescriptor
 
 
 def align_size(orig_size: int, alignment: int) -> int:
-    assert not (alignment & (alignment - 1)) # must be power of 2
+    assert not (alignment & (alignment - 1))  # must be power of 2
     mask = alignment - 1
 
     return (orig_size + mask) & ~mask
@@ -19,7 +19,7 @@ def compute_mip_level_size(mip_level: int, base_width: int, base_height: int, ba
 
 
 def compute_mip_level_resize_factor(mip_level: int):
-    return 0.5 ** mip_level
+    return 0.5**mip_level
 
 
 def skip_resources(f, n: int, header: Header):
