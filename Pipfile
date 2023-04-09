@@ -1,0 +1,27 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+atomicwrites = "*"
+attrs = "*"
+build = "*"
+colorama = "*"
+coverage = "*"
+iniconfig = "*"
+numpy = "*"
+packaging = "*"
+pep517 = "*"
+pluggy = "*"
+py = "*"
+pyparsing = "*"
+pytest = "*"
+pytest-cov = "*"
+toml = "*"
+tomli = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3"
