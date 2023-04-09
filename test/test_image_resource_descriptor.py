@@ -14,10 +14,10 @@ from .test_header import RES_HEADER
 # super-compressed in ZLib format
 RES_IMAGE_RESOURCE_DESCRIPTOR = struct.pack(
     "=3I5H2BHIH",
-    ResourceType.Image.value,
+    ResourceType.IMAGE.value,
     Format.R8G8B8A8_UINT.value,
     8,
-    SupercompressionScheme.ZLib.value,
+    SupercompressionScheme.ZLIB.value,
     0,
     2,
     1,
@@ -31,10 +31,10 @@ RES_IMAGE_RESOURCE_DESCRIPTOR = struct.pack(
 
 
 def verify_descriptor_assertions(d: ImageResourceDescriptor, h: Header):
-    assert d.resource_type is ResourceType.Image
+    assert d.resource_type is ResourceType.IMAGE
     assert d.format is Format.R8G8B8A8_UINT
     assert d.size == 8
-    assert d.supercompression_scheme is SupercompressionScheme.ZLib
+    assert d.supercompression_scheme is SupercompressionScheme.ZLIB
     assert (
         d.type_data
         == RES_IMAGE_RESOURCE_DESCRIPTOR[
@@ -60,7 +60,7 @@ def test_init():
         header=h,
         width=2,
         height=1,
-        supercompression_scheme=SupercompressionScheme.ZLib,
+        supercompression_scheme=SupercompressionScheme.ZLIB,
         flags=[ImageFlags.Image2D],
     )
 
@@ -75,7 +75,7 @@ def test_serialize():
         header=h,
         width=2,
         height=1,
-        supercompression_scheme=SupercompressionScheme.ZLib,
+        supercompression_scheme=SupercompressionScheme.ZLIB,
         flags=[ImageFlags.Image2D],
     )
 
@@ -107,7 +107,7 @@ def test_no_dimensionality_specified():
             header=h,
             width=2,
             height=1,
-            supercompression_scheme=SupercompressionScheme.ZLib,
+            supercompression_scheme=SupercompressionScheme.ZLIB,
             flags=[],
         )
 
@@ -124,7 +124,7 @@ def test_multiple_dimensionality_specified():
                 header=h,
                 width=2,
                 height=1,
-                supercompression_scheme=SupercompressionScheme.ZLib,
+                supercompression_scheme=SupercompressionScheme.ZLIB,
                 flags=[ImageFlags],
             )
 
@@ -138,7 +138,7 @@ def test_dimensions_1d():
         width=10,
         height=10,
         depth=10,
-        supercompression_scheme=SupercompressionScheme.ZLib,
+        supercompression_scheme=SupercompressionScheme.ZLIB,
         flags=[ImageFlags.Image1D],
     )
 
@@ -156,7 +156,7 @@ def test_dimensions_2d():
         width=10,
         height=10,
         depth=10,
-        supercompression_scheme=SupercompressionScheme.ZLib,
+        supercompression_scheme=SupercompressionScheme.ZLIB,
         flags=[ImageFlags.Image2D],
     )
 
@@ -174,7 +174,7 @@ def test_dimensions_3d():
         width=10,
         height=10,
         depth=10,
-        supercompression_scheme=SupercompressionScheme.ZLib,
+        supercompression_scheme=SupercompressionScheme.ZLIB,
         flags=[ImageFlags.Image3D],
     )
 

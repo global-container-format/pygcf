@@ -15,7 +15,7 @@ class MyResource(Resource):
 
 def test_init():
     h = Header(1)
-    d = ResourceDescriptor(ResourceType.Test, Format.UNDEFINED, 16, header=h)
+    d = ResourceDescriptor(ResourceType.TEST, Format.UNDEFINED, 16, header=h)
     r = MyResource(d)
 
     assert r.descriptor == d
@@ -23,7 +23,7 @@ def test_init():
 
 def test_serialize_without_padding():
     h = Header(1)
-    d = ResourceDescriptor(ResourceType.Test, Format.UNDEFINED, 16, header=h)
+    d = ResourceDescriptor(ResourceType.TEST, Format.UNDEFINED, 16, header=h)
     r = MyResource(d)
 
     raw_descriptor = d.serialize()
@@ -34,7 +34,7 @@ def test_serialize_without_padding():
 
 def test_serialize_with_padding():
     h = Header(1)
-    d = ResourceDescriptor(ResourceType.Test, Format.UNDEFINED, 15, header=h)
+    d = ResourceDescriptor(ResourceType.TEST, Format.UNDEFINED, 15, header=h)
     r = MyResource(d, data_length=15)
 
     raw_descriptor = d.serialize()
@@ -44,8 +44,8 @@ def test_serialize_with_padding():
 
 
 def test_serialize_unpadded():
-    h = Header(1, flags=[ContainerFlags.Unpadded])
-    d = ResourceDescriptor(ResourceType.Test, Format.UNDEFINED, 15, header=h)
+    h = Header(1, flags=[ContainerFlags.UNPADDED])
+    d = ResourceDescriptor(ResourceType.TEST, Format.UNDEFINED, 15, header=h)
     r = MyResource(d, data_length=15)
 
     raw_descriptor = d.serialize()

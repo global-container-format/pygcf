@@ -10,21 +10,21 @@ from gcf.vulkan import Format
 def test_decode_resource_descriptor():
     h = Header(2)
     d_image = ResourceDescriptor(
-        ResourceType.Image,
+        ResourceType.IMAGE,
         Format.R8G8B8A8_UINT,
         8,
         header=h,
         type_data=struct.pack("=3H2BHIH", 2, 1, 1, 1, 1, ImageFlags.Image2D.value, 0, 0),
     )
     d_blob = ResourceDescriptor(
-        ResourceType.Blob,
+        ResourceType.BLOB,
         Format.UNDEFINED,
         8,
         header=h,
         type_data=struct.pack("=2Q", 2, 0),
     )
     d_res = ResourceDescriptor(
-        ResourceType.Test,
+        ResourceType.TEST,
         Format.UNDEFINED,
         8,
         header=h,

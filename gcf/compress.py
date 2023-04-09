@@ -37,9 +37,9 @@ def decompress_identity(data):
 
 
 COMPRESSOR_TABLE = {
-    SupercompressionScheme.NoCompression: (compress_identity, decompress_identity),
-    SupercompressionScheme.ZLib: (compress_zlib, decompress_zlib),
-    SupercompressionScheme.Deflate: (compress_deflate, decompress_deflate),
+    SupercompressionScheme.NO_COMPRESSION: (compress_identity, decompress_identity),
+    SupercompressionScheme.ZLIB: (compress_zlib, decompress_zlib),
+    SupercompressionScheme.DEFLATE: (compress_deflate, decompress_deflate),
     # Deflate chosen to minimize test data size. Doesn't make any difference as "test" is not a valid supercompression scheme
-    SupercompressionScheme.Test: (compress_deflate, decompress_deflate),
+    SupercompressionScheme.TEST: (compress_deflate, decompress_deflate),
 }

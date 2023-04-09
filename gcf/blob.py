@@ -15,10 +15,10 @@ class BlobResourceDescriptor(ResourceDescriptor):
         /,
         header: Header,
         uncompressed_size: int,
-        supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NoCompression,
+        supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NO_COMPRESSION,
     ):
         super().__init__(
-            ResourceType.Blob,
+            ResourceType.BLOB,
             Format.UNDEFINED,
             size,
             header=header,

@@ -181,11 +181,11 @@ class ImageResourceDescriptor(ResourceDescriptor):
         depth: int = 1,
         layer_count: int = 1,
         mip_level_count: int = 1,
-        supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NoCompression,
+        supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NO_COMPRESSION,
         flags: Iterable[ImageFlags] = (ImageFlags.Image2D,),
     ):
         super().__init__(
-            ResourceType.Image,
+            ResourceType.IMAGE,
             format,
             size,
             header=header,

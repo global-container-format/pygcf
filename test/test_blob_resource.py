@@ -14,7 +14,7 @@ def test_init():
         8,
         header=h,
         uncompressed_size=128,
-        supercompression_scheme=SupercompressionScheme.Deflate,
+        supercompression_scheme=SupercompressionScheme.DEFLATE,
     )
     r = BlobResource(d, RES_BLOB_RESOURCE_DATA)
 
@@ -29,12 +29,12 @@ def test_from_uncompressed_data():
     r = BlobResource.from_uncompressed_data(
         RES_BLOB_RESOURCE_DATA,
         header=h,
-        supercompression_scheme=SupercompressionScheme.ZLib,
+        supercompression_scheme=SupercompressionScheme.ZLIB,
     )
 
     assert isinstance(r.descriptor, BlobResourceDescriptor)
     assert r.descriptor.size == len(compressed_data)
     assert r.descriptor.uncompressed_size == len(RES_BLOB_RESOURCE_DATA)
     assert r.descriptor.header == h
-    assert r.descriptor.supercompression_scheme == SupercompressionScheme.ZLib
+    assert r.descriptor.supercompression_scheme == SupercompressionScheme.ZLIB
     assert r.data == compressed_data

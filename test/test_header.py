@@ -6,17 +6,17 @@ import pytest
 from gcf import ContainerFlags, Header
 
 # Example header with version 99, 5 resources and `Unpadded` flag
-RES_HEADER = b"GC99" + struct.pack("=2H", 5, ContainerFlags.Unpadded.value)
+RES_HEADER = b"GC99" + struct.pack("=2H", 5, ContainerFlags.UNPADDED.value)
 RES_HEADER_NOFLAGS = b"GC99" + struct.pack("=2H", 5, 0)
 
 
 def test_init():
-    h = Header(5, [ContainerFlags.Unpadded], version=99)
+    h = Header(5, [ContainerFlags.UNPADDED], version=99)
 
     assert h.resource_count == 5
     assert h.version == 99
     assert len(h.flags) == 1
-    assert ContainerFlags.Unpadded in h.flags
+    assert ContainerFlags.UNPADDED in h.flags
 
 
 def test_init_default():
@@ -28,7 +28,7 @@ def test_init_default():
 
 
 def test_serialize():
-    h = Header(5, [ContainerFlags.Unpadded], version=99)
+    h = Header(5, [ContainerFlags.UNPADDED], version=99)
     s = h.serialize()
 
     assert s == RES_HEADER
@@ -47,7 +47,7 @@ def test_from_bytes():
     assert h.resource_count == 5
     assert h.version == 99
     assert len(h.flags) == 1
-    assert ContainerFlags.Unpadded in h.flags
+    assert ContainerFlags.UNPADDED in h.flags
 
 
 def test_from_bytes_noflags():
@@ -70,4 +70,4 @@ def test_from_file():
     assert h.resource_count == 5
     assert h.version == 99
     assert len(h.flags) == 1
-    assert ContainerFlags.Unpadded in h.flags
+    assert ContainerFlags.UNPADDED in h.flags

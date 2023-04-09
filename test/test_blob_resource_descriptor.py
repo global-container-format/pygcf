@@ -10,10 +10,10 @@ from .test_header import RES_HEADER
 # A deflate-compressed blob resource 128 bytes long uncompressed, 8 bytes long compressed
 RES_BLOB_RESOURCE_DESCRIPTOR = struct.pack(
     "=3I2H2Q",
-    ResourceType.Blob.value,
+    ResourceType.BLOB.value,
     Format.UNDEFINED.value,
     8,
-    SupercompressionScheme.Deflate.value,
+    SupercompressionScheme.DEFLATE.value,
     0,
     128,
     0,
@@ -21,10 +21,10 @@ RES_BLOB_RESOURCE_DESCRIPTOR = struct.pack(
 
 
 def verify_descriptor_assertions(d: BlobResourceDescriptor, h: Header):
-    assert d.resource_type is ResourceType.Blob
+    assert d.resource_type is ResourceType.BLOB
     assert d.format is Format.UNDEFINED
     assert d.size == 8
-    assert d.supercompression_scheme is SupercompressionScheme.Deflate
+    assert d.supercompression_scheme is SupercompressionScheme.DEFLATE
     assert (
         d.type_data
         == RES_BLOB_RESOURCE_DESCRIPTOR[
@@ -42,7 +42,7 @@ def test_init():
         8,
         header=h,
         uncompressed_size=128,
-        supercompression_scheme=SupercompressionScheme.Deflate,
+        supercompression_scheme=SupercompressionScheme.DEFLATE,
     )
 
     verify_descriptor_assertions(d, h)
@@ -54,7 +54,7 @@ def test_serialize():
         8,
         header=h,
         uncompressed_size=128,
-        supercompression_scheme=SupercompressionScheme.Deflate,
+        supercompression_scheme=SupercompressionScheme.DEFLATE,
     )
 
     assert d.serialize() == RES_BLOB_RESOURCE_DESCRIPTOR
