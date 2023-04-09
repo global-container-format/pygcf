@@ -1,12 +1,13 @@
 import os
 import struct
-from functools import reduce
 from enum import IntFlag
+from functools import reduce
 from typing import Iterable, Union
-from . import ResourceDescriptor, Resource, SupercompressionScheme, Header, ResourceType
+
+from . import Header, Resource, ResourceDescriptor, ResourceType, SupercompressionScheme
 from .compress import COMPRESSOR_TABLE
-from .vulkan import Format, FORMAT_SIZE_TABLE
 from .util import compute_mip_level_size
+from .vulkan import FORMAT_SIZE_TABLE, Format
 
 
 class ImageFlags(IntFlag):

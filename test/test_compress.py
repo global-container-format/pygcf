@@ -1,4 +1,5 @@
 import pytest
+
 from gcf.compress import *
 
 

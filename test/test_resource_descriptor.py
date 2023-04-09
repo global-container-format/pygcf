@@ -1,9 +1,10 @@
-import struct
 import io
-from .test_header import RES_HEADER
-from gcf import Header, ResourceType, ResourceDescriptor, SupercompressionScheme
+import struct
+
+from gcf import Header, ResourceDescriptor, ResourceType, SupercompressionScheme
 from gcf.vulkan import Format
 
+from .test_header import RES_HEADER
 
 # A resource descriptor of type Test, length 128 bytes, compressed with zlib and type-specific data a byte
 # array from 0 to 17 (inclusive)

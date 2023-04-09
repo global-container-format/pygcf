@@ -1,4 +1,5 @@
 import io
+
 from gcf import Header
 from gcf.blob import BlobResource, BlobResourceDescriptor
 from gcf.image import MipLevel, MipLevelDescriptor

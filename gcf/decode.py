@@ -1,6 +1,7 @@
 from gcf.blob import BlobResourceDescriptor
-from .image import ImageResourceDescriptor
+
 from . import ResourceDescriptor, ResourceType
+from .image import ImageResourceDescriptor
 
 
 def decode_resource_descriptor(descriptor: ResourceDescriptor):

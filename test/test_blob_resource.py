@@ -1,8 +1,8 @@
 from gcf import Header
-from gcf.compress import compress_zlib
 from gcf.blob import BlobResource, BlobResourceDescriptor, SupercompressionScheme
-from .test_blob_resource_descriptor import RES_BLOB_RESOURCE_DESCRIPTOR
+from gcf.compress import compress_zlib
 
+from .test_blob_resource_descriptor import RES_BLOB_RESOURCE_DESCRIPTOR
 
 RES_BLOB_RESOURCE_DATA = b'\0' * 8
 RES_BLOB_RESOURCE = RES_BLOB_RESOURCE_DESCRIPTOR + RES_BLOB_RESOURCE_DATA

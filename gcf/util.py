@@ -1,6 +1,7 @@
-from typing import Tuple
 import os
-from . import ResourceDescriptor, Header
+from typing import Tuple
+
+from . import Header, ResourceDescriptor
 
 
 def align_size(orig_size: int, alignment: int) -> int:

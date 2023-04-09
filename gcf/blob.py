@@ -1,5 +1,6 @@
 import struct
-from . import ResourceDescriptor, Resource, SupercompressionScheme, Header, ResourceType
+
+from . import Header, Resource, ResourceDescriptor, ResourceType, SupercompressionScheme
 from .compress import COMPRESSOR_TABLE
 from .vulkan import Format
 

@@ -1,4 +1,5 @@
 import zlib
+
 from . import SupercompressionScheme
 
 

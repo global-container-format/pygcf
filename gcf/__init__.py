@@ -1,6 +1,7 @@
 import struct
+from enum import Flag, IntEnum, auto, unique
 from typing import Iterable
-from enum import IntEnum, Flag, auto, unique
+
 from .vulkan import Format as VkFormat
 
 

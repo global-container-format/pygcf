@@ -1,10 +1,11 @@
-import struct
 import io
-from .test_header import RES_HEADER
+import struct
+
 from gcf import Header, ResourceType, SupercompressionScheme
 from gcf.blob import BlobResourceDescriptor
 from gcf.vulkan import Format
 
+from .test_header import RES_HEADER
 
 # A deflate-compressed blob resource 128 bytes long uncompressed, 8 bytes long compressed
 RES_BLOB_RESOURCE_DESCRIPTOR = struct.pack(

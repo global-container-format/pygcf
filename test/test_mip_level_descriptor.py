@@ -1,7 +1,7 @@
 import io
 import struct
-from gcf.image import MipLevelDescriptor
 
+from gcf.image import MipLevelDescriptor
 
 # A mip level descriptor of compressed size 1024, uncompressed size 256
 # and stride 16x8x8

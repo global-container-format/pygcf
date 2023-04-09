@@ -1,4 +1,4 @@
-from gcf import Resource, Header, ResourceDescriptor, ResourceType, ContainerFlags
+from gcf import ContainerFlags, Header, Resource, ResourceDescriptor, ResourceType
 from gcf.vulkan import Format
 
 

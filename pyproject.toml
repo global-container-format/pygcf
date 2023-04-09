@@ -8,3 +8,9 @@ version = "2.0.1"
 
 [options]
 packages = "gcf"
+
+[tool.isort]
+skip_gitignore = true
+line_length = 120
+use_parentheses = true
+atomic = true

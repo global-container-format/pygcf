@@ -1,8 +1,9 @@
 import struct
+
 from gcf import Header, ResourceDescriptor, ResourceType
 from gcf.blob import BlobResourceDescriptor
-from gcf.image import ImageFlags, ImageResourceDescriptor
 from gcf.decode import decode_resource_descriptor
+from gcf.image import ImageFlags, ImageResourceDescriptor
 from gcf.vulkan import Format
 
 

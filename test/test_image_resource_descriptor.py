@@ -1,12 +1,14 @@
-import struct
 import io
+import struct
+from itertools import chain, combinations
+
 import pytest
-from itertools import combinations, chain
-from .test_header import RES_HEADER
+
 from gcf import Header, ResourceType, SupercompressionScheme
-from gcf.image import ImageResourceDescriptor, ImageFlags
+from gcf.image import ImageFlags, ImageResourceDescriptor
 from gcf.vulkan import Format
 
+from .test_header import RES_HEADER
 
 # A an 2D image resource descriptor with format R8G8B8A8_UINT, width 2x1x1 with 1 layer and 1 mip level
 # super-compressed in ZLib format
