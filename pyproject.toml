@@ -16,9 +16,8 @@ line_length = 120
 use_parentheses = true
 atomic = true
 
-[tool.flake8]
+[tool.pylint]
 max-line-length = 120
-extend-ignore = "E203"
 
 [tool.black]
 line-length = 120
