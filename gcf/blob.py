@@ -31,7 +31,6 @@ class BlobResourceDescriptor(ResourceDescriptor):
             size,
             header=header,
             supercompression_scheme=supercompression_scheme,
-            type_info=self.TYPE_INFO_CUSTOM,
         )
 
         self.uncompressed_size = uncompressed_size
@@ -44,6 +43,9 @@ class BlobResourceDescriptor(ResourceDescriptor):
     @classmethod
     def from_resource_descriptor(cls, descriptor: ResourceDescriptor):
         """Create a blob descriptor from a resource descriptor."""
+        if not isinstance(descriptor.type_info, bytes):
+            raise TypeError("Expected blob type info.")
+
         fields = struct.unpack(cls.TYPE_INFO_FORMAT, descriptor.type_info)
         uncompressed_size = fields[0]
 

@@ -5,7 +5,7 @@ Global Container Format reader and writer implementation.
 import struct
 from enum import Flag, IntEnum, auto, unique
 from functools import reduce
-from typing import Iterable
+from typing import Iterable, Optional
 
 from .resource_format import Format as VkFormat
 
@@ -53,8 +53,8 @@ class Header:
     def __init__(
         self,
         resource_count: int,
-        flags: Iterable[ContainerFlags] = None,
-        version: int = None,
+        flags: Optional[Iterable[ContainerFlags]] = None,
+        version: Optional[int] = None,
     ):
         """Create a new header."""
         self.resource_count = resource_count
@@ -80,9 +80,9 @@ class Header:
         This function will raise a value error if the the version does not match the
         provided valid version value.
         """
-        *magic, resource_count, raw_flags = struct.unpack(cls.FORMAT, raw)
+        *raw_magic, resource_count, raw_flags = struct.unpack(cls.FORMAT, raw)
 
-        magic = "".join(map(chr, magic))
+        magic = "".join(map(chr, raw_magic))
         valid_magic = cls._make_valid_version(valid_version)
 
         if magic != valid_magic:
@@ -112,7 +112,13 @@ class ResourceDescriptor:
     FORMAT_SIZE = struct.calcsize(FORMAT)
     TYPE_INFO_OFFSET = FORMAT_SIZE
     TYPE_INFO_SIZE = TOTAL_RESOURCE_DESCRIPTOR_SIZE - FORMAT_SIZE
-    TYPE_INFO_CUSTOM = object()  # Used to indicate type info is handled by a subclass
+
+    __type_info: bytes
+
+    @property
+    def type_info(self) -> bytes:
+        """Return the resource type information."""
+        return self.__type_info
 
     def __init__(
         self,
@@ -122,7 +128,7 @@ class ResourceDescriptor:
         /,
         header: Header,
         supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NO_COMPRESSION,
-        type_info: bytes = b"\x00" * TYPE_INFO_SIZE,
+        type_info: Optional[bytes] = None,
     ):
         """Create a new descriptor."""
         self.resource_type = resource_type
@@ -130,9 +136,7 @@ class ResourceDescriptor:
         self.size = size
         self.supercompression_scheme = supercompression_scheme
         self.header = header
-
-        if type_info is not self.TYPE_INFO_CUSTOM:
-            self.type_info = type_info
+        self.__type_info = type_info or b"\x00" * self.TYPE_INFO_SIZE
 
     def serialize(self):
         """Serialize the descriptor."""

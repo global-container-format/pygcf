@@ -7,7 +7,7 @@ import os
 import struct
 from enum import IntFlag
 from functools import reduce
-from typing import BinaryIO, Iterable, Union
+from typing import Any, BinaryIO, Iterable, Union
 
 from . import Header, Resource, ResourceDescriptor, ResourceType, SupercompressionScheme
 from .compress import COMPRESSOR_TABLE
@@ -43,7 +43,10 @@ class MipLevelDescriptor:
         self.depth_stride = depth_stride
         self.layer_stride = layer_stride
 
-    def __eq__(self, obj: object) -> bool:
+    def __eq__(self, obj: Any) -> bool:
+        if not isinstance(obj, MipLevelDescriptor):
+            return False
+
         return (
             self.compressed_size == obj.compressed_size
             and self.uncompressed_size == obj.uncompressed_size
@@ -98,7 +101,10 @@ class MipLevel:
         self.descriptor = descriptor
         self.data = level_data
 
-    def __eq__(self, obj: object) -> bool:
+    def __eq__(self, obj: Any) -> bool:
+        if not isinstance(obj, MipLevel):
+            return False
+
         return self.descriptor == obj.descriptor and self.data == obj.data
 
     def serialize(self) -> bytes:
@@ -211,7 +217,6 @@ class ImageResourceDescriptor(ResourceDescriptor):
             size,
             header=header,
             supercompression_scheme=supercompression_scheme,
-            type_info=self.TYPE_INFO_CUSTOM,
         )
 
         self.flags = set(flags)
@@ -225,7 +230,10 @@ class ImageResourceDescriptor(ResourceDescriptor):
         self.layer_count = layer_count
         self.mip_level_count = mip_level_count
 
-    def __eq__(self, obj: object) -> bool:
+    def __eq__(self, obj: Any) -> bool:
+        if not isinstance(obj, ImageResourceDescriptor):
+            return False
+
         return (
             super().__eq__(obj)
             and self.width == obj.width
@@ -269,6 +277,9 @@ class ImageResourceDescriptor(ResourceDescriptor):
     @classmethod
     def from_resource_descriptor(cls, descriptor: ResourceDescriptor):
         """Create an image resource from a resource descriptor."""
+        if not isinstance(descriptor.type_info, bytes):
+            raise TypeError("Expected image type info.")
+
         fields = struct.unpack(cls.TYPE_INFO_FORMAT, descriptor.type_info)
         width, height, depth = fields[0:3]
         layer_count = fields[3]
@@ -313,7 +324,10 @@ class ImageResource(Resource):
         if not self.mip_levels:
             raise ValueError("Should at least have one mip level.")
 
-    def __eq__(self, obj: object) -> bool:
+    def __eq__(self, obj: Any) -> bool:
+        if not isinstance(obj, ImageResource):
+            return False
+
         return super().__eq__(obj) and self.mip_levels == obj.mip_levels
 
     @property
