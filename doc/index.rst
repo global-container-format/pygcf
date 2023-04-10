@@ -6,10 +6,14 @@
 Welcome to PyGCF's documentation!
 =================================
 
+`View the GCF Specification <https://github.com/global-container-format/gcf-spec>`_
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   modules
+   gcf
 
 
 Indices and tables

@@ -68,7 +68,11 @@ mypy gcf
 PyGCF's documentation is built via Sphinx. To build the documentation, run:
 
 ```bash
-sphinx-build -b html doc dist/doc
+# Generate the API docs from the Python source code
+sphinx-apidoc -f --ext-autodoc -o doc gcf
+
+# Build the HTML documentation
+sphinx-build -a -b html doc dist/doc
 ```
 
 ## License

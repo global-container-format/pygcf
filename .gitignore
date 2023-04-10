@@ -8,3 +8,6 @@ pygcf.egg-info/
 __pycache__/
 
 .coverage
+
+doc/*.rst
+!doc/index.rst
