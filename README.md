@@ -63,6 +63,14 @@ pylint gcf
 mypy gcf
 ```
 
+### Documentation
+
+PyGCF's documentation is built via Sphinx. To build the documentation, run:
+
+```bash
+sphinx-build -b html doc dist/doc
+```
+
 ## License
 
 See the [LICENSE](LICENSE) file.

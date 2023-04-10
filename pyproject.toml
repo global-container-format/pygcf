@@ -4,7 +4,23 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygcf"
-version = "2.0.1"
+version = "2.0.2"
+description = "The Global Container Format reference implementation."
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [{ name = "Alfredo Mungo" }]
+keywords = ["gcf", "global", "container", "game", "format", "texture", "generic", "dds", "ktx"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia"
+]
+
+[project.urls]
+spec = "https://github.com/global-container-format/gcf-spec"
+repository = "https://github.com/global-container-format/pygcf"
 
 [options]
 packages = "gcf"
@@ -21,3 +37,20 @@ max-line-length = 120
 
 [tool.black]
 line-length = 120
+
+[tool.sphinx]
+# -- General configuration ---------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+
+extensions = []
+
+templates_path = ['_templates']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+
+
+
+# -- Options for HTML output -------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+
+html_theme = 'alabaster'
+html_static_path = ['_static']
