@@ -3,21 +3,30 @@ Global Container Format reader and writer implementation.
 """
 
 import struct
-from functools import reduce
 from enum import Flag, IntEnum, auto, unique
+from functools import reduce
 from typing import Iterable
 
-from .vulkan import Format as VkFormat
+from .resource_format import Format as VkFormat
+
+
+def _align_size(orig_size: int, alignment: int) -> int:
+    assert not alignment & (alignment - 1)  # must be power of 2
+    mask = alignment - 1
+
+    return (orig_size + mask) & ~mask
 
 
 class ContainerFlags(Flag):
     """Container flags."""
+
     UNPADDED = auto()
 
 
 @unique
 class SupercompressionScheme(IntEnum):
     """Supported standard supercompression schemes."""
+
     NO_COMPRESSION = (0,)
     ZLIB = (1,)
     DEFLATE = (2,)
@@ -27,6 +36,7 @@ class SupercompressionScheme(IntEnum):
 @unique
 class ResourceType(IntEnum):
     """Supported standard resource types."""
+
     BLOB = (0,)
     IMAGE = (1,)
     TEST = 0xFFFFFFFF
@@ -34,6 +44,7 @@ class ResourceType(IntEnum):
 
 class Header:
     """A GCF file header."""
+
     DEFAULT_VERSION = 2
     MAGIC_PREFIX = "GC"
     FORMAT = "=4BHH"
@@ -183,15 +194,13 @@ class Resource:
 
     def serialize(self):
         """Serialize the resource."""
-        from .util import align_size  # pylint: disable=import-outside-toplevel
-
         raw_content = self.content_data
         self.descriptor.size = len(raw_content)
         raw_data = self.descriptor.serialize() + raw_content
 
         if not ContainerFlags.UNPADDED in self.descriptor.header.flags:
             raw_data_size = len(raw_data)
-            raw_data_size_aligned = align_size(raw_data_size, 8)
+            raw_data_size_aligned = _align_size(raw_data_size, 8)
             padding_size = raw_data_size_aligned - raw_data_size
         else:
             padding_size = 0

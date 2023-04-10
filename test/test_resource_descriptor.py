@@ -2,7 +2,7 @@ import io
 import struct
 
 from gcf import Header, ResourceDescriptor, ResourceType, SupercompressionScheme
-from gcf.vulkan import Format
+from gcf.resource_format import Format
 
 from .test_header import RES_HEADER
 

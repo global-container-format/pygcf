@@ -7,11 +7,12 @@ import struct
 
 from . import Header, Resource, ResourceDescriptor, ResourceType, SupercompressionScheme
 from .compress import COMPRESSOR_TABLE
-from .vulkan import Format
+from .resource_format import Format
 
 
 class BlobResourceDescriptor(ResourceDescriptor):
     """A blob resource descriptor."""
+
     TYPE_DATA_FORMAT = "=2Q"
     TYPE_DATA_FORMAT_SIZE = struct.calcsize(TYPE_DATA_FORMAT)
 

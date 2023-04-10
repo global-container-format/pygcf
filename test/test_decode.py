@@ -4,7 +4,7 @@ from gcf import Header, ResourceDescriptor, ResourceType
 from gcf.blob import BlobResourceDescriptor
 from gcf.decode import decode_resource_descriptor
 from gcf.image import ImageFlags, ImageResourceDescriptor
-from gcf.vulkan import Format
+from gcf.resource_format import Format
 
 
 def test_decode_resource_descriptor():
@@ -14,7 +14,7 @@ def test_decode_resource_descriptor():
         Format.R8G8B8A8_UINT,
         8,
         header=h,
-        type_data=struct.pack("=3H2BHIH", 2, 1, 1, 1, 1, ImageFlags.Image2D.value, 0, 0),
+        type_data=struct.pack("=3H2BHIH", 2, 1, 1, 1, 1, ImageFlags.IMAGE_2D.value, 0, 0),
     )
     d_blob = ResourceDescriptor(
         ResourceType.BLOB,

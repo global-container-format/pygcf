@@ -35,7 +35,7 @@ def decompress_zlib(data):
     return zlib.decompress(data, wbits=15)
 
 
-def compress_identity(data, level=None): # pylint: disable=unused-argument
+def compress_identity(data, level=None):  # pylint: disable=unused-argument
     """Identity compression function.
 
     Will return the input data. Any other argument is ignored.

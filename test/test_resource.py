@@ -1,5 +1,5 @@
-from gcf import ContainerFlags, Header, Resource, ResourceDescriptor, ResourceType
-from gcf.vulkan import Format
+from gcf import ContainerFlags, Header, Resource, ResourceDescriptor, ResourceType, _align_size
+from gcf.resource_format import Format
 
 
 class MyResource(Resource):
@@ -11,6 +11,13 @@ class MyResource(Resource):
     @property
     def content_data(self) -> bytes:
         return bytes(range(self.data_length))
+
+
+def test_align_size():
+    assert _align_size(15, 16) == 16
+    assert _align_size(257, 256) == 512
+    assert _align_size(0, 2) == 0
+    assert _align_size(2, 2) == 2
 
 
 def test_init():

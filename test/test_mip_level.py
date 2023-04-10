@@ -5,7 +5,7 @@ import pytest
 
 from gcf import Header
 from gcf.image import ImageResourceDescriptor, MipLevel, MipLevelDescriptor, skip_mip_levels
-from gcf.vulkan import Format
+from gcf.resource_format import Format
 
 from .test_mip_level_descriptor import RES_MIP_LEVEL_DESCRIPTOR
 

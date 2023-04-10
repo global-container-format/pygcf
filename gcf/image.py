@@ -1,26 +1,35 @@
+"""
+Image resource.
+
+Spec: https://github.com/global-container-format/gcf-spec/blob/master/resources/image.md
+"""
 import os
 import struct
 from enum import IntFlag
 from functools import reduce
-from typing import Iterable, Union
+from typing import BinaryIO, Iterable, Union
 
 from . import Header, Resource, ResourceDescriptor, ResourceType, SupercompressionScheme
 from .compress import COMPRESSOR_TABLE
+from .resource_format import FORMAT_SIZE_TABLE, Format
 from .util import compute_mip_level_size
-from .vulkan import FORMAT_SIZE_TABLE, Format
 
 
 class ImageFlags(IntFlag):
-    Image1D = 0x0001
-    Image2D = 0x0003
-    Image3D = 0x0007
+    """Image flags."""
+
+    IMAGE_1D = 0x0001
+    IMAGE_2D = 0x0003  # pylint: disable=implicit-flag-alias
+    IMAGE_3D = 0x0007  # pylint: disable=implicit-flag-alias
 
 
 class MipLevelDescriptor:
+    """A descriptor for the individual mip level."""
+
     FORMAT = "=6IQ"
     FORMAT_SIZE = struct.calcsize(FORMAT)
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         compressed_size: int,
         uncompressed_size: int,
@@ -34,16 +43,17 @@ class MipLevelDescriptor:
         self.depth_stride = depth_stride
         self.layer_stride = layer_stride
 
-    def __eq__(self, o: object) -> bool:
+    def __eq__(self, obj: object) -> bool:
         return (
-            self.compressed_size == o.compressed_size
-            and self.uncompressed_size == o.uncompressed_size
-            and self.row_stride == o.row_stride
-            and self.depth_stride == o.depth_stride
-            and self.layer_stride == o.layer_stride
+            self.compressed_size == obj.compressed_size
+            and self.uncompressed_size == obj.uncompressed_size
+            and self.row_stride == obj.row_stride
+            and self.depth_stride == obj.depth_stride
+            and self.layer_stride == obj.layer_stride
         )
 
     def serialize(self) -> bytes:
+        """Serialize this mip level descriptor."""
         return struct.pack(
             self.FORMAT,
             self.compressed_size,
@@ -56,7 +66,8 @@ class MipLevelDescriptor:
         )
 
     @classmethod
-    def from_bytes(cls, raw: bytes):
+    def from_bytes(cls, raw: bytes) -> "MipLevelDescriptor":
+        """Create a new mip level descriptor from a bytes object."""
         fields = struct.unpack(cls.FORMAT, raw[: cls.FORMAT_SIZE])
         compressed_size = fields[0]
         uncompressed_size = fields[1]
@@ -67,13 +78,16 @@ class MipLevelDescriptor:
         return cls(compressed_size, uncompressed_size, row_stride, depth_stride, layer_stride)
 
     @classmethod
-    def from_file(cls, f):
-        raw_data = f.read(cls.FORMAT_SIZE)
+    def from_file(cls, fileobj: BinaryIO) -> "MipLevelDescriptor":
+        """Create a new mip level descriptor from file."""
+        raw_data = fileobj.read(cls.FORMAT_SIZE)
 
         return cls.from_bytes(raw_data)
 
 
 class MipLevel:
+    """Representation of a single mip level in an image resource."""
+
     def __init__(self, descriptor: MipLevelDescriptor, level_data: bytes):
         """Create a new mip level from compressed raw data.
 
@@ -84,13 +98,15 @@ class MipLevel:
         self.descriptor = descriptor
         self.data = level_data
 
-    def __eq__(self, o: object) -> bool:
-        return self.descriptor == o.descriptor and self.data == o.data
+    def __eq__(self, obj: object) -> bool:
+        return self.descriptor == obj.descriptor and self.data == obj.data
 
     def serialize(self) -> bytes:
+        """Serialize the mip level."""
         return self.descriptor.serialize() + self.data
 
     def get_size(self) -> int:
+        """Get the total size, in bytes of this mip level's data."""
         return self.descriptor.FORMAT_SIZE + len(self.data)
 
     @classmethod
@@ -110,7 +126,7 @@ class MipLevel:
         return cls(descriptor, level_data)
 
     @classmethod
-    def from_image_data(
+    def from_image_data(  # pylint: disable=too-many-locals, too-many-arguments
         cls,
         descriptor: "ImageResourceDescriptor",
         data,
@@ -118,12 +134,13 @@ class MipLevel:
         row_stride: Union[int, None] = None,
         depth_stride: Union[int, None] = None,
         layer_stride: Union[int, None] = None,
-    ) -> "MipLevel":  # pylint: disable=too-many-locals, too-many-arguments
+    ) -> "MipLevel":
         """Create a new mip level from uncompressed image data.
 
         ARGUMENTS:
             descriptor - The image resource descriptor.
-            data -  The uncompressed image data as a numpy array with shape [layers, depth, height, width, format_width].
+            data -  The uncompressed image data as a numpy array
+                with shape [layers, depth, height, width, format_width].
             level - The mip level expressed by `data`.
             row_stride - The row stride or None to default to the size of a row.
             depth_stride - The depth stride or None to default to the size of one image plane.
@@ -170,6 +187,7 @@ class MipLevel:
 
 class ImageResourceDescriptor(ResourceDescriptor):
     """Image resource descriptor."""
+
     TYPE_DATA_FORMAT = "=3H2BHIH"
     TYPE_DATA_FORMAT_SIZE = struct.calcsize(TYPE_DATA_FORMAT)
 
@@ -185,8 +203,8 @@ class ImageResourceDescriptor(ResourceDescriptor):
         layer_count: int = 1,
         mip_level_count: int = 1,
         supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NO_COMPRESSION,
-        flags: Iterable[ImageFlags] = (ImageFlags.Image2D,),
-    ): # pylint: disable=too-many-arguments
+        flags: Iterable[ImageFlags] = (ImageFlags.IMAGE_2D,),
+    ):  # pylint: disable=too-many-arguments
         super().__init__(
             ResourceType.IMAGE,
             resource_format,
@@ -198,12 +216,12 @@ class ImageResourceDescriptor(ResourceDescriptor):
 
         self.flags = set(flags)
 
-        if len(set((ImageFlags.Image1D, ImageFlags.Image2D, ImageFlags.Image3D)) & self.flags) != 1:
+        if len(set((ImageFlags.IMAGE_1D, ImageFlags.IMAGE_2D, ImageFlags.IMAGE_3D)) & self.flags) != 1:
             raise ValueError("Image flags must specify exactly once if the image is 1, 2 or 3D.")
 
         self.width = width
-        self.height = height if ImageFlags.Image1D not in self.flags else 1
-        self.depth = depth if ImageFlags.Image3D in self.flags else 1
+        self.height = height if ImageFlags.IMAGE_1D not in self.flags else 1
+        self.depth = depth if ImageFlags.IMAGE_3D in self.flags else 1
         self.layer_count = layer_count
         self.mip_level_count = mip_level_count
 
@@ -241,7 +259,7 @@ class ImageResourceDescriptor(ResourceDescriptor):
 
         # The Image[1,2,3]D flags share the same bits; only one should be
         # allowed.
-        for curflag in (ImageFlags.Image3D, ImageFlags.Image2D, ImageFlags.Image1D):
+        for curflag in (ImageFlags.IMAGE_3D, ImageFlags.IMAGE_2D, ImageFlags.IMAGE_1D):
             if raw_flags & curflag.value == curflag.value:
                 flags.add(curflag)
                 break

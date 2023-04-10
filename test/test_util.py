@@ -2,15 +2,7 @@ import io
 
 from gcf import Header
 from gcf.blob import BlobResource, BlobResourceDescriptor
-from gcf.image import MipLevel, MipLevelDescriptor
 from gcf.util import *
-
-
-def test_align_size():
-    assert align_size(15, 16) == 16
-    assert align_size(257, 256) == 512
-    assert align_size(0, 2) == 0
-    assert align_size(2, 2) == 2
 
 
 def test_compute_mip_level_size():
