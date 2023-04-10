@@ -19,6 +19,14 @@ def test_init():
     assert ContainerFlags.UNPADDED in h.flags
 
 
+def test_is_gcf_file_unpadded():
+    h_padded = Header(5, None, version=99)
+    h_unpadded = Header(5, [ContainerFlags.UNPADDED], version=99)
+
+    assert h_unpadded.is_gcf_file_unpadded
+    assert not h_padded.is_gcf_file_unpadded
+
+
 def test_init_default():
     h = Header(6)
 

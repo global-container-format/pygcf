@@ -50,6 +50,11 @@ class Header:
     FORMAT = "=4BHH"
     FORMAT_SIZE = struct.calcsize(FORMAT)
 
+    @property
+    def is_gcf_file_unpadded(self) -> bool:
+        """True if there is no padding between resources."""
+        return ContainerFlags.UNPADDED in self.flags
+
     def __init__(
         self,
         resource_count: int,
@@ -202,7 +207,7 @@ class Resource:
         self.descriptor.size = len(raw_content)
         raw_data = self.descriptor.serialize() + raw_content
 
-        if not ContainerFlags.UNPADDED in self.descriptor.header.flags:
+        if not self.descriptor.header.is_gcf_file_unpadded:
             raw_data_size = len(raw_data)
             raw_data_size_aligned = _align_size(raw_data_size, 8)
             padding_size = raw_data_size_aligned - raw_data_size
