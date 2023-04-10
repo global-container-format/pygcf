@@ -188,8 +188,8 @@ class MipLevel:
 class ImageResourceDescriptor(ResourceDescriptor):
     """Image resource descriptor."""
 
-    TYPE_DATA_FORMAT = "=3H2BHIH"
-    TYPE_DATA_FORMAT_SIZE = struct.calcsize(TYPE_DATA_FORMAT)
+    TYPE_INFO_FORMAT = "=3H2BHIH"
+    TYPE_INFO_FORMAT_SIZE = struct.calcsize(TYPE_INFO_FORMAT)
 
     def __init__(
         self,
@@ -211,7 +211,7 @@ class ImageResourceDescriptor(ResourceDescriptor):
             size,
             header=header,
             supercompression_scheme=supercompression_scheme,
-            type_data=self.TYPE_DATA_CUSTOM,
+            type_info=self.TYPE_INFO_CUSTOM,
         )
 
         self.flags = set(flags)
@@ -237,12 +237,12 @@ class ImageResourceDescriptor(ResourceDescriptor):
         )
 
     @property
-    def type_data(self) -> bytes:
+    def type_info(self) -> bytes:
         """Return the resource type information."""
         raw_flags = reduce(lambda x, y: x | y, self.flags)
 
         return struct.pack(
-            self.TYPE_DATA_FORMAT,
+            self.TYPE_INFO_FORMAT,
             self.width,
             self.height,
             self.depth,
@@ -269,7 +269,7 @@ class ImageResourceDescriptor(ResourceDescriptor):
     @classmethod
     def from_resource_descriptor(cls, descriptor: ResourceDescriptor):
         """Create an image resource from a resource descriptor."""
-        fields = struct.unpack(cls.TYPE_DATA_FORMAT, descriptor.type_data)
+        fields = struct.unpack(cls.TYPE_INFO_FORMAT, descriptor.type_info)
         width, height, depth = fields[0:3]
         layer_count = fields[3]
         mip_level_count = fields[4]

@@ -13,8 +13,8 @@ from .resource_format import Format
 class BlobResourceDescriptor(ResourceDescriptor):
     """A blob resource descriptor."""
 
-    TYPE_DATA_FORMAT = "=2Q"
-    TYPE_DATA_FORMAT_SIZE = struct.calcsize(TYPE_DATA_FORMAT)
+    TYPE_INFO_FORMAT = "=2Q"
+    TYPE_INFO_FORMAT_SIZE = struct.calcsize(TYPE_INFO_FORMAT)
 
     def __init__(
         self,
@@ -31,20 +31,20 @@ class BlobResourceDescriptor(ResourceDescriptor):
             size,
             header=header,
             supercompression_scheme=supercompression_scheme,
-            type_data=self.TYPE_DATA_CUSTOM,
+            type_info=self.TYPE_INFO_CUSTOM,
         )
 
         self.uncompressed_size = uncompressed_size
 
     @property
-    def type_data(self):
+    def type_info(self):
         """Return the blob descriptor's type info."""
-        return struct.pack(self.TYPE_DATA_FORMAT, self.uncompressed_size, 0)
+        return struct.pack(self.TYPE_INFO_FORMAT, self.uncompressed_size, 0)
 
     @classmethod
     def from_resource_descriptor(cls, descriptor: ResourceDescriptor):
         """Create a blob descriptor from a resource descriptor."""
-        fields = struct.unpack(cls.TYPE_DATA_FORMAT, descriptor.type_data)
+        fields = struct.unpack(cls.TYPE_INFO_FORMAT, descriptor.type_info)
         uncompressed_size = fields[0]
 
         return cls(

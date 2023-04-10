@@ -107,12 +107,12 @@ class Header:
 class ResourceDescriptor:
     """A resource descriptor."""
 
-    TOTAL_RESOURCE_DESCRIPTOR_SIZE = 32  # Includes the basic resource descriptor + type data
+    TOTAL_RESOURCE_DESCRIPTOR_SIZE = 32  # Includes the basic resource descriptor + type info
     FORMAT = "=3I2H"
     FORMAT_SIZE = struct.calcsize(FORMAT)
-    TYPE_DATA_OFFSET = FORMAT_SIZE
-    TYPE_DATA_SIZE = TOTAL_RESOURCE_DESCRIPTOR_SIZE - FORMAT_SIZE
-    TYPE_DATA_CUSTOM = object()  # Used to indicate type data is handled by a subclass
+    TYPE_INFO_OFFSET = FORMAT_SIZE
+    TYPE_INFO_SIZE = TOTAL_RESOURCE_DESCRIPTOR_SIZE - FORMAT_SIZE
+    TYPE_INFO_CUSTOM = object()  # Used to indicate type info is handled by a subclass
 
     def __init__(
         self,
@@ -122,7 +122,7 @@ class ResourceDescriptor:
         /,
         header: Header,
         supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NO_COMPRESSION,
-        type_data: bytes = b"\x00" * TYPE_DATA_SIZE,
+        type_info: bytes = b"\x00" * TYPE_INFO_SIZE,
     ):
         """Create a new descriptor."""
         self.resource_type = resource_type
@@ -131,8 +131,8 @@ class ResourceDescriptor:
         self.supercompression_scheme = supercompression_scheme
         self.header = header
 
-        if type_data is not self.TYPE_DATA_CUSTOM:
-            self.type_data = type_data
+        if type_info is not self.TYPE_INFO_CUSTOM:
+            self.type_info = type_info
 
     def serialize(self):
         """Serialize the descriptor."""
@@ -145,25 +145,25 @@ class ResourceDescriptor:
                 self.supercompression_scheme,
                 0,
             )
-            + self.type_data
+            + self.type_info
         )
 
     @classmethod
     def from_bytes(cls, raw: bytes, header: Header):
         """Create a new descriptor from a bytes object."""
-        fields = struct.unpack(cls.FORMAT, raw[: cls.TYPE_DATA_OFFSET])
+        fields = struct.unpack(cls.FORMAT, raw[: cls.TYPE_INFO_OFFSET])
         resource_type = ResourceType(fields[0])
         resource_format = VkFormat(fields[1])
         size = fields[2]
         supercompression_scheme = SupercompressionScheme(fields[3])
-        type_data = raw[cls.TYPE_DATA_OFFSET :]
+        type_info = raw[cls.TYPE_INFO_OFFSET :]
 
         return cls(
             resource_type,
             resource_format,
             size,
             supercompression_scheme=supercompression_scheme,
-            type_data=type_data,
+            type_info=type_info,
             header=header,
         )
 
@@ -171,7 +171,7 @@ class ResourceDescriptor:
     def from_file(cls, fileobj, header: Header):
         """Create a new descriptor from file."""
 
-        raw_descriptor = fileobj.read(cls.FORMAT_SIZE + cls.TYPE_DATA_SIZE)
+        raw_descriptor = fileobj.read(cls.FORMAT_SIZE + cls.TYPE_INFO_SIZE)
 
         return cls.from_bytes(raw_descriptor, header)
 

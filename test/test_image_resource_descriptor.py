@@ -36,10 +36,10 @@ def verify_descriptor_assertions(d: ImageResourceDescriptor, h: Header):
     assert d.size == 8
     assert d.supercompression_scheme is SupercompressionScheme.ZLIB
     assert (
-        d.type_data
+        d.type_info
         == RES_IMAGE_RESOURCE_DESCRIPTOR[
-            ImageResourceDescriptor.TYPE_DATA_OFFSET : ImageResourceDescriptor.TYPE_DATA_OFFSET
-            + ImageResourceDescriptor.TYPE_DATA_SIZE
+            ImageResourceDescriptor.TYPE_INFO_OFFSET : ImageResourceDescriptor.TYPE_INFO_OFFSET
+            + ImageResourceDescriptor.TYPE_INFO_SIZE
         ]
     )
     assert d.header is h

@@ -26,10 +26,10 @@ def verify_descriptor_assertions(d: BlobResourceDescriptor, h: Header):
     assert d.size == 8
     assert d.supercompression_scheme is SupercompressionScheme.DEFLATE
     assert (
-        d.type_data
+        d.type_info
         == RES_BLOB_RESOURCE_DESCRIPTOR[
-            BlobResourceDescriptor.TYPE_DATA_OFFSET : BlobResourceDescriptor.TYPE_DATA_OFFSET
-            + BlobResourceDescriptor.TYPE_DATA_SIZE
+            BlobResourceDescriptor.TYPE_INFO_OFFSET : BlobResourceDescriptor.TYPE_INFO_OFFSET
+            + BlobResourceDescriptor.TYPE_INFO_SIZE
         ]
     )
     assert d.header is h
