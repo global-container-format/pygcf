@@ -192,9 +192,9 @@ class Resource:
         """Return the resource data.
 
         This method is meant to be overridden.
-        The default implementation raises a runtime error.
+        The default implementation raises a not implemented error.
         """
-        raise RuntimeError("get_content_data() must be overridden.")
+        raise NotImplementedError("content_data() must be overridden.")
 
     def serialize(self):
         """Serialize the resource."""
