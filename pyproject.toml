@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygcf"
-version = "2.0.2"
+version = "2.0.3"
 description = "The Global Container Format reference implementation."
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -21,9 +21,6 @@ classifiers = [
 [project.urls]
 spec = "https://github.com/global-container-format/gcf-spec"
 repository = "https://github.com/global-container-format/pygcf"
-
-[options]
-packages = "gcf"
 
 [tool.isort]
 profile = "black"
@@ -50,3 +47,9 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 html_theme = 'haiku'
 html_static_path = ['_static']
 nitpicky = true
+
+[tool.setuptools]
+packages = ["gcf"]
+
+[tool.setuptools.package-data]
+gcf = ["py.typed"]
