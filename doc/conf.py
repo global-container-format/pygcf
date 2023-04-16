@@ -1,7 +1,7 @@
 import sys
 from os import path
-import toml
 
+import toml
 
 DOC_DIR = path.dirname(__file__)
 ROOT_DIR = path.normpath(path.join(DOC_DIR, ".."))

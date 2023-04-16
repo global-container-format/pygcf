@@ -11,7 +11,7 @@ from typing import Any, BinaryIO, Iterable, Union
 
 from . import Header, Resource, ResourceDescriptor, ResourceType, SupercompressionScheme
 from .compress import COMPRESSOR_TABLE
-from .resource_format import FORMAT_SIZE_TABLE, Format
+from .resource_format import Format
 from .util import compute_mip_level_size
 
 
@@ -146,7 +146,7 @@ class MipLevel:
         ARGUMENTS:
             descriptor - The image resource descriptor.
             data -  The uncompressed image data as a numpy array
-                with shape [layers, depth, height, width, format_width].
+                with shape [layers, depth, height, width, channels].
             level - The mip level expressed by `data`.
             row_stride - The row stride or None to default to the size of a row.
             depth_stride - The depth stride or None to default to the size of one image plane.
@@ -161,16 +161,17 @@ class MipLevel:
         compressed_data_length = len(compressed_data)
         uncompressed_data_length = len(flattened_data)
 
-        try:
-            pixel_size = FORMAT_SIZE_TABLE[descriptor.format]
-        except KeyError as exc:
-            raise ValueError(f"Unsupported format {descriptor.format.name}.") from exc
-
         mip_level_width, mip_level_height, mip_level_depth = compute_mip_level_size(
             level, descriptor.width, descriptor.height, descriptor.depth
         )
 
-        real_row_stride = row_stride or (pixel_size * mip_level_width)
+        if not row_stride:
+            channel_count = data.shape[4]
+            pixel_size = channel_count * data.dtype.itemsize
+            real_row_stride = pixel_size * mip_level_width
+        else:
+            real_row_stride = row_stride
+
         real_depth_stride = depth_stride or (real_row_stride * mip_level_height)
         real_layer_stride = layer_stride or (real_depth_stride * mip_level_depth)
         expected_level_size = real_layer_stride * descriptor.layer_count

@@ -3,7 +3,6 @@ Format constants imported from the Vulkan specification.
 
 Spec: https://registry.khronos.org/vulkan/specs/1.2-extensions/html/chap47.html#VkFormat
 """
-import re
 from enum import IntEnum
 
 
@@ -291,24 +290,3 @@ class Format(IntEnum):
     G16_B16_R16_3PLANE_422_UNORM_KHR = G16_B16_R16_3PLANE_422_UNORM
     G16_B16R16_2PLANE_422_UNORM_KHR = G16_B16R16_2PLANE_422_UNORM
     G16_B16_R16_3PLANE_444_UNORM_KHR = G16_B16_R16_3PLANE_444_UNORM
-
-
-# This table is computed below and contains the size in bytes of a
-# pixel for each format entry.
-FORMAT_SIZE_TABLE = {}
-
-
-# Fill the format size table
-_member_size_rxp = re.compile(r"""[A-Z](\d+)""")
-
-for member in Format.__members__:
-    if member.endswith(("_UINT", "_SRGB")):
-        matches = _member_size_rxp.findall(member)
-
-        if matches:
-            channel_sizes = map(int, matches)
-            format_size = sum(channel_sizes) // 8
-
-            FORMAT_SIZE_TABLE[getattr(Format, member)] = format_size
-        else:
-            raise RuntimeWarning(f"Member {member} did not match.")

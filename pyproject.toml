@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygcf"
-version = "2.0.4"
+version = "3.0.0"
 description = "The Global Container Format reference implementation."
 readme = "README.md"
 license = {file = "LICENSE"}

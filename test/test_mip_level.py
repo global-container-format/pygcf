@@ -65,14 +65,6 @@ def test_from_image_data():
     assert l.descriptor.layer_stride == l.descriptor.depth_stride
 
 
-def test_from_image_data_bad_format():
-    h = Header(1)
-    d = ImageResourceDescriptor(Format.UNDEFINED, RES_MIP_LEVEL_IMAGE.nbytes, header=h, width=16, height=16)
-
-    with pytest.raises(ValueError):
-        MipLevel.from_image_data(d, RES_MIP_LEVEL_IMAGE, 0)
-
-
 def test_from_image_data_bad_data():
     h = Header(1)
     d = ImageResourceDescriptor(Format.R8G8B8_UINT, RES_MIP_LEVEL_IMAGE.nbytes, header=h, width=16, height=16)
