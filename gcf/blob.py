@@ -81,11 +81,11 @@ class BlobResource(Resource):
         """
         super().__init__(descriptor)
 
-        self.data = data
+        self._data = data
 
     @property
     def content_data(self) -> bytes:
-        return self.data
+        return self._data
 
     @classmethod
     def from_uncompressed_data(

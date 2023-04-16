@@ -19,8 +19,8 @@ def test_init():
     r = BlobResource(d, RES_BLOB_RESOURCE_DATA)
 
     assert r.descriptor == d
-    assert r.data == RES_BLOB_RESOURCE_DATA
-    assert r.content_data == r.data
+    assert r._data == RES_BLOB_RESOURCE_DATA
+    assert r.content_data == r._data
 
 
 def test_from_uncompressed_data():
@@ -37,4 +37,4 @@ def test_from_uncompressed_data():
     assert r.descriptor.uncompressed_size == len(RES_BLOB_RESOURCE_DATA)
     assert r.descriptor.header == h
     assert r.descriptor.supercompression_scheme == SupercompressionScheme.ZLIB
-    assert r.data == compressed_data
+    assert r._data == compressed_data
