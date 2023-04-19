@@ -5,9 +5,9 @@ Global Container Format reader and writer implementation.
 import struct
 from enum import Flag, IntEnum, auto, unique
 from functools import reduce
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Union, cast
 
-from .resource_format import Format as VkFormat
+from .resource_format import Format
 
 
 def _align_size(orig_size: int, alignment: int) -> int:
@@ -119,6 +119,7 @@ class ResourceDescriptor:
     TYPE_INFO_SIZE = TOTAL_RESOURCE_DESCRIPTOR_SIZE - FORMAT_SIZE
 
     __type_info: bytes
+    format: int
 
     @property
     def type_info(self) -> bytes:
@@ -128,7 +129,7 @@ class ResourceDescriptor:
     def __init__(
         self,
         resource_type: ResourceType,
-        resource_format: VkFormat,
+        resource_format: Union[Format, int],
         size: int,
         /,
         header: Header,
@@ -136,8 +137,11 @@ class ResourceDescriptor:
         type_info: Optional[bytes] = None,
     ):
         """Create a new descriptor."""
+
+        real_format = resource_format if isinstance(resource_format, int) else cast(Format, resource_format).value
+
         self.resource_type = resource_type
-        self.format = resource_format
+        self.format = real_format
         self.size = size
         self.supercompression_scheme = supercompression_scheme
         self.header = header
@@ -162,7 +166,7 @@ class ResourceDescriptor:
         """Create a new descriptor from a bytes object."""
         fields = struct.unpack(cls.FORMAT, raw[: cls.TYPE_INFO_OFFSET])
         resource_type = ResourceType(fields[0])
-        resource_format = VkFormat(fields[1])
+        resource_format = fields[1]
         size = fields[2]
         supercompression_scheme = SupercompressionScheme(fields[3])
         type_info = raw[cls.TYPE_INFO_OFFSET :]

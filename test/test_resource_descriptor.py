@@ -51,7 +51,7 @@ def test_from_bytes():
     d = ResourceDescriptor.from_bytes(RES_RESOURCE_DESCRIPTOR, h)
 
     assert d.resource_type is ResourceType.TEST
-    assert d.format is Format.UNDEFINED
+    assert d.format == Format.UNDEFINED
     assert d.size == 128
     assert d.supercompression_scheme is SupercompressionScheme.ZLIB
     assert d.type_info == struct.pack("=16B", *range(16))
@@ -64,7 +64,7 @@ def test_from_file():
     d = ResourceDescriptor.from_file(f, h)
 
     assert d.resource_type is ResourceType.TEST
-    assert d.format is Format.UNDEFINED
+    assert d.format == Format.UNDEFINED
     assert d.size == 128
     assert d.supercompression_scheme is SupercompressionScheme.ZLIB
     assert d.type_info == struct.pack("=16B", *range(16))

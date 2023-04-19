@@ -200,7 +200,7 @@ class ImageResourceDescriptor(ResourceDescriptor):
 
     def __init__(
         self,
-        resource_format: Format,
+        resource_format: Union[Format, int],
         size: int,
         /,
         header: Header,
