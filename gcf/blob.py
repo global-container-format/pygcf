@@ -36,17 +36,17 @@ class BlobResourceDescriptor(ResourceDescriptor):
         self.uncompressed_size = uncompressed_size
 
     @property
-    def type_info(self):
+    def extended_descriptor(self):
         """Return the blob descriptor's type info."""
         return struct.pack(self.TYPE_INFO_FORMAT, self.uncompressed_size, 0)
 
     @classmethod
     def from_resource_descriptor(cls, descriptor: ResourceDescriptor):
         """Create a blob descriptor from a resource descriptor."""
-        if not isinstance(descriptor.type_info, bytes):
+        if not isinstance(descriptor.extended_descriptor, bytes):
             raise TypeError("Expected blob type info.")
 
-        fields = struct.unpack(cls.TYPE_INFO_FORMAT, descriptor.type_info)
+        fields = struct.unpack(cls.TYPE_INFO_FORMAT, descriptor.extended_descriptor)
         uncompressed_size = fields[0]
 
         return cls(

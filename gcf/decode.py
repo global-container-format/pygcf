@@ -9,7 +9,7 @@ from .image import ImageResourceDescriptor
 
 def decode_resource_descriptor(descriptor: ResourceDescriptor):
     """Convert a generic resource descriptor into a more specific one depending on the resource type."""
-    if descriptor.resource_type == ResourceType.IMAGE:
+    if descriptor.resource_type == ResourceType.TEXTURE:
         return ImageResourceDescriptor.from_resource_descriptor(descriptor)
 
     if descriptor.resource_type == ResourceType.BLOB:

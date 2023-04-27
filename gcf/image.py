@@ -213,7 +213,7 @@ class ImageResourceDescriptor(ResourceDescriptor):
         flags: Iterable[ImageFlags] = (ImageFlags.IMAGE_2D,),
     ):  # pylint: disable=too-many-arguments
         super().__init__(
-            ResourceType.IMAGE,
+            ResourceType.TEXTURE,
             resource_format,
             size,
             header=header,
@@ -246,7 +246,7 @@ class ImageResourceDescriptor(ResourceDescriptor):
         )
 
     @property
-    def type_info(self) -> bytes:
+    def extended_descriptor(self) -> bytes:
         """Return the resource type information."""
         raw_flags = reduce(lambda x, y: x | y, self.flags)
 
@@ -278,10 +278,10 @@ class ImageResourceDescriptor(ResourceDescriptor):
     @classmethod
     def from_resource_descriptor(cls, descriptor: ResourceDescriptor):
         """Create an image resource from a resource descriptor."""
-        if not isinstance(descriptor.type_info, bytes):
+        if not isinstance(descriptor.extended_descriptor, bytes):
             raise TypeError("Expected image type info.")
 
-        fields = struct.unpack(cls.TYPE_INFO_FORMAT, descriptor.type_info)
+        fields = struct.unpack(cls.TYPE_INFO_FORMAT, descriptor.extended_descriptor)
         width, height, depth = fields[0:3]
         layer_count = fields[3]
         mip_level_count = fields[4]

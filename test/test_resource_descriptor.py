@@ -21,14 +21,14 @@ def test_init():
         128,
         header=h,
         supercompression_scheme=SupercompressionScheme.ZLIB,
-        type_info=struct.pack("=16B", *range(16)),
+        extended_descriptor=struct.pack("=16B", *range(16)),
     )
 
     assert d.resource_type is ResourceType.TEST
     assert d.format is Format.UNDEFINED
     assert d.size == 128
     assert d.supercompression_scheme is SupercompressionScheme.ZLIB
-    assert d.type_info == struct.pack("=16B", *range(16))
+    assert d.extended_descriptor == struct.pack("=16B", *range(16))
     assert d.header is h
 
 
@@ -40,7 +40,7 @@ def test_serialize():
         128,
         header=h,
         supercompression_scheme=SupercompressionScheme.ZLIB,
-        type_info=struct.pack("=16B", *range(16)),
+        extended_descriptor=struct.pack("=16B", *range(16)),
     )
 
     assert d.serialize() == RES_RESOURCE_DESCRIPTOR
@@ -54,7 +54,7 @@ def test_from_bytes():
     assert d.format == Format.UNDEFINED
     assert d.size == 128
     assert d.supercompression_scheme is SupercompressionScheme.ZLIB
-    assert d.type_info == struct.pack("=16B", *range(16))
+    assert d.extended_descriptor == struct.pack("=16B", *range(16))
     assert d.header is h
 
 
@@ -67,5 +67,5 @@ def test_from_file():
     assert d.format == Format.UNDEFINED
     assert d.size == 128
     assert d.supercompression_scheme is SupercompressionScheme.ZLIB
-    assert d.type_info == struct.pack("=16B", *range(16))
+    assert d.extended_descriptor == struct.pack("=16B", *range(16))
     assert d.header is h

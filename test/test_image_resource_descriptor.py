@@ -14,7 +14,7 @@ from .test_header import RES_HEADER
 # super-compressed in ZLib format
 RES_IMAGE_RESOURCE_DESCRIPTOR = struct.pack(
     "=3I5H2BHIH",
-    ResourceType.IMAGE.value,
+    ResourceType.TEXTURE.value,
     Format.R8G8B8A8_UINT.value,
     8,
     SupercompressionScheme.ZLIB.value,
@@ -31,15 +31,15 @@ RES_IMAGE_RESOURCE_DESCRIPTOR = struct.pack(
 
 
 def verify_descriptor_assertions(d: ImageResourceDescriptor, h: Header):
-    assert d.resource_type is ResourceType.IMAGE
+    assert d.resource_type is ResourceType.TEXTURE
     assert d.format == Format.R8G8B8A8_UINT
     assert d.size == 8
     assert d.supercompression_scheme is SupercompressionScheme.ZLIB
     assert (
-        d.type_info
+        d.extended_descriptor
         == RES_IMAGE_RESOURCE_DESCRIPTOR[
-            ImageResourceDescriptor.TYPE_INFO_OFFSET : ImageResourceDescriptor.TYPE_INFO_OFFSET
-            + ImageResourceDescriptor.TYPE_INFO_SIZE
+            ImageResourceDescriptor.EXTENDED_DESCRIPTOR_OFFSET : ImageResourceDescriptor.EXTENDED_DESCRIPTOR_OFFSET
+            + ImageResourceDescriptor.EXTENDED_DESCRIPTOR_SIZE
         ]
     )
     assert d.header is h
