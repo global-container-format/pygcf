@@ -5,8 +5,8 @@ from itertools import chain, combinations
 import pytest
 
 from gcf import Header, ResourceType, SupercompressionScheme
-from gcf.image import ImageFlags, ImageResourceDescriptor
 from gcf.resource_format import Format
+from gcf.texture import TextureFlags, TextureResourceDescriptor
 
 from .test_header import RES_HEADER
 
@@ -24,13 +24,13 @@ RES_IMAGE_RESOURCE_DESCRIPTOR = struct.pack(
     1,
     1,
     1,
-    ImageFlags.IMAGE_2D.value,
+    TextureFlags.TEXTURE_2D.value,
     0,
     0,
 )
 
 
-def verify_descriptor_assertions(d: ImageResourceDescriptor, h: Header):
+def verify_descriptor_assertions(d: TextureResourceDescriptor, h: Header):
     assert d.resource_type is ResourceType.TEXTURE
     assert d.format == Format.R8G8B8A8_UINT
     assert d.size == 8
@@ -38,8 +38,8 @@ def verify_descriptor_assertions(d: ImageResourceDescriptor, h: Header):
     assert (
         d.extended_descriptor
         == RES_IMAGE_RESOURCE_DESCRIPTOR[
-            ImageResourceDescriptor.EXTENDED_DESCRIPTOR_OFFSET : ImageResourceDescriptor.EXTENDED_DESCRIPTOR_OFFSET
-            + ImageResourceDescriptor.EXTENDED_DESCRIPTOR_SIZE
+            TextureResourceDescriptor.EXTENDED_DESCRIPTOR_OFFSET : TextureResourceDescriptor.EXTENDED_DESCRIPTOR_OFFSET
+            + TextureResourceDescriptor.EXTENDED_DESCRIPTOR_SIZE
         ]
     )
     assert d.header is h
@@ -49,19 +49,19 @@ def verify_descriptor_assertions(d: ImageResourceDescriptor, h: Header):
     assert d.layer_count == 1
     assert d.mip_level_count == 1
     assert len(d.flags) == 1
-    assert ImageFlags.IMAGE_2D in d.flags
+    assert TextureFlags.TEXTURE_2D in d.flags
 
 
 def test_init():
     h = Header.from_bytes(RES_HEADER, valid_version=99)
-    d = ImageResourceDescriptor(
+    d = TextureResourceDescriptor(
         Format.R8G8B8A8_UINT,
         8,
         header=h,
         width=2,
         height=1,
         supercompression_scheme=SupercompressionScheme.ZLIB,
-        flags=[ImageFlags.IMAGE_2D],
+        flags=[TextureFlags.TEXTURE_2D],
     )
 
     verify_descriptor_assertions(d, h)
@@ -69,14 +69,14 @@ def test_init():
 
 def test_serialize():
     h = Header.from_bytes(RES_HEADER, valid_version=99)
-    d = ImageResourceDescriptor(
+    d = TextureResourceDescriptor(
         Format.R8G8B8A8_UINT,
         8,
         header=h,
         width=2,
         height=1,
         supercompression_scheme=SupercompressionScheme.ZLIB,
-        flags=[ImageFlags.IMAGE_2D],
+        flags=[TextureFlags.TEXTURE_2D],
     )
 
     assert d.serialize() == RES_IMAGE_RESOURCE_DESCRIPTOR
@@ -84,7 +84,7 @@ def test_serialize():
 
 def test_from_bytes():
     h = Header.from_bytes(RES_HEADER, valid_version=99)
-    d = ImageResourceDescriptor.from_bytes(RES_IMAGE_RESOURCE_DESCRIPTOR, h)
+    d = TextureResourceDescriptor.from_bytes(RES_IMAGE_RESOURCE_DESCRIPTOR, h)
 
     verify_descriptor_assertions(d, h)
 
@@ -92,7 +92,7 @@ def test_from_bytes():
 def test_from_file():
     f = io.BytesIO(RES_IMAGE_RESOURCE_DESCRIPTOR)
     h = Header.from_bytes(RES_HEADER, valid_version=99)
-    d = ImageResourceDescriptor.from_file(f, h)
+    d = TextureResourceDescriptor.from_file(f, h)
 
     verify_descriptor_assertions(d, h)
 
@@ -101,7 +101,7 @@ def test_no_dimensionality_specified():
     h = Header.from_bytes(RES_HEADER, valid_version=99)
 
     with pytest.raises(ValueError):
-        ImageResourceDescriptor(
+        TextureResourceDescriptor(
             Format.R8G8B8A8_UINT,
             8,
             header=h,
@@ -114,24 +114,24 @@ def test_no_dimensionality_specified():
 
 def test_multiple_dimensionality_specified():
     h = Header.from_bytes(RES_HEADER, valid_version=99)
-    combs = lambda n: combinations([ImageFlags.IMAGE_1D, ImageFlags.IMAGE_2D, ImageFlags.IMAGE_3D], n)
+    combs = lambda n: combinations([TextureFlags.TEXTURE_1D, TextureFlags.TEXTURE_2D, TextureFlags.TEXTURE_3D], n)
 
     for x in chain(combs(2), combs(3)):
         with pytest.raises(ValueError):
-            ImageResourceDescriptor(
+            TextureResourceDescriptor(
                 Format.R8G8B8A8_UINT,
                 8,
                 header=h,
                 width=2,
                 height=1,
                 supercompression_scheme=SupercompressionScheme.ZLIB,
-                flags=[ImageFlags],
+                flags=[TextureFlags],
             )
 
 
 def test_dimensions_1d():
     h = Header.from_bytes(RES_HEADER, valid_version=99)
-    d = ImageResourceDescriptor(
+    d = TextureResourceDescriptor(
         Format.R8G8B8A8_UINT,
         8,
         header=h,
@@ -139,7 +139,7 @@ def test_dimensions_1d():
         height=10,
         depth=10,
         supercompression_scheme=SupercompressionScheme.ZLIB,
-        flags=[ImageFlags.IMAGE_1D],
+        flags=[TextureFlags.TEXTURE_1D],
     )
 
     assert d.width == 10
@@ -149,7 +149,7 @@ def test_dimensions_1d():
 
 def test_dimensions_2d():
     h = Header.from_bytes(RES_HEADER, valid_version=99)
-    d = ImageResourceDescriptor(
+    d = TextureResourceDescriptor(
         Format.R8G8B8A8_UINT,
         8,
         header=h,
@@ -157,7 +157,7 @@ def test_dimensions_2d():
         height=10,
         depth=10,
         supercompression_scheme=SupercompressionScheme.ZLIB,
-        flags=[ImageFlags.IMAGE_2D],
+        flags=[TextureFlags.TEXTURE_2D],
     )
 
     assert d.width == 10
@@ -167,7 +167,7 @@ def test_dimensions_2d():
 
 def test_dimensions_3d():
     h = Header.from_bytes(RES_HEADER, valid_version=99)
-    d = ImageResourceDescriptor(
+    d = TextureResourceDescriptor(
         Format.R8G8B8A8_UINT,
         8,
         header=h,
@@ -175,7 +175,7 @@ def test_dimensions_3d():
         height=10,
         depth=10,
         supercompression_scheme=SupercompressionScheme.ZLIB,
-        flags=[ImageFlags.IMAGE_3D],
+        flags=[TextureFlags.TEXTURE_3D],
     )
 
     assert d.width == 10

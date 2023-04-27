@@ -3,7 +3,7 @@ GCF resource compression and decompression.
 """
 import zlib
 
-from . import SupercompressionScheme
+from .resource import SupercompressionScheme
 
 
 def compress_deflate(data, level=6):
@@ -55,7 +55,6 @@ COMPRESSOR_TABLE = {
     SupercompressionScheme.NO_COMPRESSION: (compress_identity, decompress_identity),
     SupercompressionScheme.ZLIB: (compress_zlib, decompress_zlib),
     SupercompressionScheme.DEFLATE: (compress_deflate, decompress_deflate),
-    # Deflate chosen to minimize test data size. Doesn't make any difference
-    # as "test" is not a valid supercompression scheme
+    # Arbitrarily chosen for testing this library
     SupercompressionScheme.TEST: (compress_deflate, decompress_deflate),
 }

@@ -1,7 +1,7 @@
 import io
 import struct
 
-from gcf.image import MipLevelDescriptor
+from gcf.texture import MipLevelDescriptor
 
 # A mip level descriptor of compressed size 1024, uncompressed size 256
 # and stride 16x8x8
@@ -12,7 +12,7 @@ def verify_descriptor_assertions(d):
     assert d.compressed_size == 1024
     assert d.uncompressed_size == 256
     assert d.row_stride == 16
-    assert d.depth_stride == 8
+    assert d.slice_stride == 8
     assert d.layer_stride == 8
 
 
