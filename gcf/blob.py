@@ -5,16 +5,17 @@ Spec: https://github.com/global-container-format/gcf-spec/blob/master/resources/
 """
 import struct
 
-from . import Header, Resource, ResourceDescriptor, ResourceType, SupercompressionScheme
+from typing import BinaryIO
+from . import Header, Resource, ResourceDescriptor, ResourceType, SupercompressionScheme, COMMON_DESCRIPTOR_SIZE
 from .compress import COMPRESSOR_TABLE
 from .resource_format import Format
+
+EXTENDED_DESCRIPTOR_FORMAT = "=2Q"
+EXTENDED_DESCRIPTOR_SIZE = struct.calcsize(EXTENDED_DESCRIPTOR_FORMAT)
 
 
 class BlobResourceDescriptor(ResourceDescriptor):
     """A blob resource descriptor."""
-
-    TYPE_INFO_FORMAT = "=2Q"
-    TYPE_INFO_FORMAT_SIZE = struct.calcsize(TYPE_INFO_FORMAT)
 
     def __init__(
         self,
@@ -25,12 +26,14 @@ class BlobResourceDescriptor(ResourceDescriptor):
         supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NO_COMPRESSION,
     ):
         """Create a new blob resource descriptor."""
+
         super().__init__(
             ResourceType.BLOB,
             Format.UNDEFINED,
             size,
             header=header,
             supercompression_scheme=supercompression_scheme,
+            extended_descriptor=struct.pack(EXTENDED_DESCRIPTOR_FORMAT, 0, 0)
         )
 
         self.uncompressed_size = uncompressed_size
@@ -38,15 +41,14 @@ class BlobResourceDescriptor(ResourceDescriptor):
     @property
     def extended_descriptor(self):
         """Return the blob descriptor's type info."""
-        return struct.pack(self.TYPE_INFO_FORMAT, self.uncompressed_size, 0)
+
+        return struct.pack(EXTENDED_DESCRIPTOR_FORMAT, self.uncompressed_size, 0)
 
     @classmethod
-    def from_resource_descriptor(cls, descriptor: ResourceDescriptor):
+    def from_resource_descriptor(cls, descriptor: ResourceDescriptor, raw_extended_descriptor: bytes):
         """Create a blob descriptor from a resource descriptor."""
-        if not isinstance(descriptor.extended_descriptor, bytes):
-            raise TypeError("Expected blob type info.")
 
-        fields = struct.unpack(cls.TYPE_INFO_FORMAT, descriptor.extended_descriptor)
+        fields = struct.unpack(EXTENDED_DESCRIPTOR_FORMAT, raw_extended_descriptor)
         uncompressed_size = fields[0]
 
         return cls(
@@ -58,15 +60,18 @@ class BlobResourceDescriptor(ResourceDescriptor):
 
     @classmethod
     def from_bytes(cls, raw: bytes, header: Header):
-        base_descriptor = ResourceDescriptor.from_bytes(raw, header)
+        common_descriptor = ResourceDescriptor.from_bytes(raw, header)
+        total_descriptor_size = COMMON_DESCRIPTOR_SIZE + EXTENDED_DESCRIPTOR_SIZE
+        raw_extended_descriptor = raw[COMMON_DESCRIPTOR_SIZE : total_descriptor_size]
 
-        return cls.from_resource_descriptor(base_descriptor)
+        return cls.from_resource_descriptor(common_descriptor, raw_extended_descriptor)
 
     @classmethod
-    def from_file(cls, fileobj, header: Header):
-        base_descriptor = ResourceDescriptor.from_file(fileobj, header)
+    def from_file(cls, fileobj: BinaryIO, header: Header):
+        common_descriptor = ResourceDescriptor.from_file(fileobj, header)
+        raw_extended_descriptor = fileobj.read(EXTENDED_DESCRIPTOR_SIZE)
 
-        return cls.from_resource_descriptor(base_descriptor)
+        return cls.from_resource_descriptor(common_descriptor, raw_extended_descriptor)
 
 
 class BlobResource(Resource):

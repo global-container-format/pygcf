@@ -9,13 +9,13 @@ from typing import Iterable, Optional, Union, cast, BinaryIO
 
 from .resource_format import Format
 
-_GCF_DEFAULT_VERSION = 3
-_GCF_MAGIC_PREFIX = "GC"
-_HEADER_FORMAT = "=4BHH"
-_HEADER_FORMAT_SIZE = struct.calcsize(_HEADER_FORMAT)
+DEFAULT_VERSION = 3
+MAGIC_PREFIX = "GC"
+HEADER_FORMAT = "=4BHH"
+HEADER_FORMAT_SIZE = struct.calcsize(HEADER_FORMAT)
 
-_DESCRIPTOR_FORMAT = "=3I2H"
-_COMMON_DESCRIPTOR_SIZE = struct.calcsize(_DESCRIPTOR_FORMAT)
+COMMON_DESCRIPTOR_FORMAT = "=3I2H"
+COMMON_DESCRIPTOR_SIZE = struct.calcsize(COMMON_DESCRIPTOR_FORMAT)
 
 
 def _align_size(orig_size: int, alignment: int) -> int:
@@ -30,7 +30,7 @@ def _align_size(orig_size: int, alignment: int) -> int:
 def _make_valid_version(version_number: int) -> str:
     """Create a new version string from its version number."""
 
-    return f"{_GCF_MAGIC_PREFIX}{version_number:02d}"
+    return f"{MAGIC_PREFIX}{version_number:02d}"
 
 
 def _deserialize_common_descriptor(raw: bytes):
@@ -41,7 +41,7 @@ def _deserialize_common_descriptor(raw: bytes):
 
         :returns: A new resource descriptor object.
     """
-    fields = struct.unpack(_DESCRIPTOR_FORMAT, raw)
+    fields = struct.unpack(COMMON_DESCRIPTOR_FORMAT, raw)
 
     return {
         "resource_type": ResourceType(fields[0]),
@@ -95,7 +95,7 @@ class Header:
         """Create a new header."""
 
         self.resource_count = resource_count
-        self.version = version or _GCF_DEFAULT_VERSION
+        self.version = version or DEFAULT_VERSION
         self.flags = set(flags or ())
 
 
@@ -105,17 +105,17 @@ class Header:
         magic = self._make_valid_version(self.version).encode("ascii")
         flags = reduce(lambda result, flag: result | flag.value, self.flags, 0)
 
-        return struct.pack(_HEADER_FORMAT, *magic, self.resource_count, flags)
+        return struct.pack(HEADER_FORMAT, *magic, self.resource_count, flags)
 
     @classmethod
-    def from_bytes(cls, raw: bytes, /, valid_version=_GCF_DEFAULT_VERSION):
+    def from_bytes(cls, raw: bytes, /, valid_version=DEFAULT_VERSION):
         """Create a new header from a bytes object.
 
         This function will raise a value error if the the version does not match the
         provided valid version value.
         """
 
-        *raw_magic, resource_count, raw_flags = struct.unpack(_HEADER_FORMAT, raw)
+        *raw_magic, resource_count, raw_flags = struct.unpack(HEADER_FORMAT, raw)
 
         magic = "".join(map(chr, raw_magic))
         valid_magic = _make_valid_version(valid_version)
@@ -129,21 +129,20 @@ class Header:
         return cls(resource_count, flags, version)
 
     @classmethod
-    def from_file(cls, f, /, valid_version=_GCF_DEFAULT_VERSION):
+    def from_file(cls, f, /, valid_version=DEFAULT_VERSION):
         """Create a new header from file.
 
         This function will raise a value error if the the version does not match the
         provided valid version value.
         """
 
-        raw_header = f.read(_HEADER_FORMAT_SIZE)
+        raw_header = f.read(HEADER_FORMAT_SIZE)
         return cls.from_bytes(raw_header, valid_version=valid_version)
 
 
 class ResourceDescriptor:
     """A resource descriptor."""
 
-    __extended_descriptor: bytes
     format: int
     resource_type: ResourceType
     size: int
@@ -151,15 +150,15 @@ class ResourceDescriptor:
 
     @property
     def extended_descriptor(self) -> bytes:
-        """Return the resource type information."""
+        """Return the resource extended descriptor as a bytes object."""
 
-        return self.__extended_descriptor
+        raise NotImplementedError("This property must be implemented by descriptor subclasses.")
 
     @property
     def extended_descriptor_size(self) -> int:
         """Return the size of the extended descriptor, in bytes."""
 
-        return len(self.__extended_descriptor)
+        return len(self.extended_descriptor)
 
     def __init__(
         self,
@@ -168,8 +167,7 @@ class ResourceDescriptor:
         size: int,
         /,
         header: Header,
-        supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NO_COMPRESSION,
-        extended_descriptor: Optional[bytes] = None,
+        supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NO_COMPRESSION
     ):
         """Create a new descriptor."""
 
@@ -180,14 +178,13 @@ class ResourceDescriptor:
         self.size = size
         self.supercompression_scheme = supercompression_scheme
         self.header = header
-        self.__extended_descriptor = extended_descriptor or b""
 
     def serialize(self) -> bytes:
         """Serialize the descriptor."""
 
         return (
             struct.pack(
-                _DESCRIPTOR_FORMAT,
+                COMMON_DESCRIPTOR_FORMAT,
                 self.resource_type,
                 self.format,
                 self.size,
@@ -198,25 +195,19 @@ class ResourceDescriptor:
         )
 
     @classmethod
-    def from_bytes(cls, raw: bytes, raw_extended: bytes, header: Header) -> "ResourceDescriptor":
+    def from_bytes(cls, raw: bytes, header: Header) -> "ResourceDescriptor":
         """Create a new descriptor from a bytes object.
 
             :param raw: The raw common descriptor data.
-            :param raw_extended: The raw extended descriptor data.
             :param header: The GCF header.
 
             :returns: A new resource descriptor object.
         """
 
-        fields = _deserialize_common_descriptor(raw)
-        extended_descriptor_size = fields["extended_descriptor_size"]
-
-        if not len(raw_extended) == extended_descriptor_size:
-            raise ValueError("Invalid extended descriptor size.", extended_descriptor_size, len(raw_extended))
+        fields = _deserialize_common_descriptor(raw[: COMMON_DESCRIPTOR_SIZE])
 
         return cls(
             **fields,
-            extended_descriptor=raw_extended,
             header=header,
         )
 
@@ -224,14 +215,11 @@ class ResourceDescriptor:
     def from_file(cls, fileobj: BinaryIO, header: Header) -> "ResourceDescriptor":
         """Create a new descriptor from file."""
 
-        raw_descriptor = fileobj.read(_COMMON_DESCRIPTOR_SIZE)
+        raw_descriptor = fileobj.read(COMMON_DESCRIPTOR_SIZE)
         fields = _deserialize_common_descriptor(raw_descriptor)
-        extended_descriptor_size = fields["extended_descriptor_size"]
-        extended_descriptor = fileobj.read(extended_descriptor_size)
 
         return cls(
             **fields,
-            extended_descriptor=extended_descriptor,
             header=header,
         )
 
