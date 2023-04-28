@@ -32,3 +32,10 @@ def compute_mip_level_resize_factor(mip_level: int):
     given mip level size.
     """
     return 0.5**mip_level
+
+
+def align_size(orig_size: int, alignment: int) -> int:
+    assert not alignment & (alignment - 1)  # must be power of 2
+    mask = alignment - 1
+
+    return (orig_size + mask) & ~mask

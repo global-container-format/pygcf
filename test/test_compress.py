@@ -1,6 +1,6 @@
 import pytest
 
-from gcf.compress import *
+from gcf.compression import *
 
 
 @pytest.mark.parametrize("compression_algorithm", tuple(COMPRESSOR_TABLE.keys()))

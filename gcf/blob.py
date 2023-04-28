@@ -1,6 +1,7 @@
 import struct
 from typing import Optional
 
+from .compression import compress, decompress
 from .resource import (
     COMMON_DESCRIPTOR_SIZE,
     CommonResourceDescriptor,
@@ -52,3 +53,15 @@ def deserialize_blob_descriptor(
         **common_descriptor,  # type: ignore
         "uncompressed_size": extended_fields[0],
     }
+
+
+def deserialize_blob_data(raw: bytes, descriptor: BlobResourceDescriptor) -> bytes:
+    supercompression_scheme = descriptor["supercompression_scheme"]
+
+    return decompress(raw, supercompression_scheme)
+
+
+def serialize_blob_data(data: bytes, descriptor: BlobResourceDescriptor) -> bytes:
+    supercompression_scheme = descriptor["supercompression_scheme"]
+
+    return compress(data, supercompression_scheme)

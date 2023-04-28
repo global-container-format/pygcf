@@ -1,7 +1,8 @@
 import struct
 from enum import IntFlag
-from typing import Optional, TypedDict
+from typing import List, Optional, TypedDict
 
+from .compression import compress, decompress
 from .resource import (
     COMMON_DESCRIPTOR_SIZE,
     CommonResourceDescriptor,
@@ -107,3 +108,33 @@ def deserialize_texture_resource_descriptor(
         "flags": extended_fields[5],
         "texture_group": extended_fields[6],
     }
+
+
+def deserialize_mip_level_data(raw: bytes, descriptor: TextureResourceDescriptor) -> List[bytes]:
+    supercompression_scheme = descriptor["supercompression_scheme"]
+    layer_count = descriptor["layer_count"]
+    decompressed_level = decompress(raw, supercompression_scheme)
+    total_decompressed_size = len(decompressed_level)
+    layer_size = total_decompressed_size // layer_count
+
+    layers = []
+
+    for layer_index in range(layer_count):
+        layer_data_begin = layer_size * layer_index
+        layer_data_end = layer_data_begin + layer_size
+
+        layers.append(decompressed_level[layer_data_begin:layer_data_end])
+
+    return layers
+
+
+def serialize_mip_level_data(layers: List[bytes], descriptor: TextureResourceDescriptor) -> bytes:
+    supercompression_scheme = descriptor["supercompression_scheme"]
+    layer_count = descriptor["layer_count"]
+
+    if not layer_count == len(layers):
+        raise ValueError("Layer count doesn't match descriptor metadata.")
+
+    layer_seq = b"".join(layers)
+
+    return compress(layer_seq, supercompression_scheme)

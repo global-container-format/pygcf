@@ -52,9 +52,27 @@ def decompress_identity(data):
 
 
 COMPRESSOR_TABLE = {
-    SupercompressionScheme.NO_COMPRESSION: (compress_identity, decompress_identity),
-    SupercompressionScheme.ZLIB: (compress_zlib, decompress_zlib),
-    SupercompressionScheme.DEFLATE: (compress_deflate, decompress_deflate),
+    SupercompressionScheme.NO_COMPRESSION.value: (compress_identity, decompress_identity),
+    SupercompressionScheme.ZLIB.value: (compress_zlib, decompress_zlib),
+    SupercompressionScheme.DEFLATE.value: (compress_deflate, decompress_deflate),
     # Arbitrarily chosen for testing this library
-    SupercompressionScheme.TEST: (compress_deflate, decompress_deflate),
+    SupercompressionScheme.TEST.value: (compress_deflate, decompress_deflate),
 }
+
+
+def compress(data: bytes, supercompression_scheme: int) -> bytes:
+    try:
+        compressor, _ = COMPRESSOR_TABLE[supercompression_scheme]
+    except KeyError:
+        raise ValueError("Unknown supercompression scheme", supercompression_scheme)
+
+    return compressor(data)
+
+
+def decompress(data: bytes, supercompression_scheme: int) -> bytes:
+    try:
+        _, decompressor = COMPRESSOR_TABLE[supercompression_scheme]
+    except KeyError as exc:
+        raise ValueError("Unknown supercompression scheme", supercompression_scheme) from exc
+
+    return decompressor(data)
