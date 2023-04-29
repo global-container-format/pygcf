@@ -1,3 +1,7 @@
+"""
+Python library to read and write `GCF <https://github.com/global-container-format/gcf-spec>`_ files.
+"""
+
 from .blob import (
     BlobResourceDescriptor,
     deserialize_blob_descriptor,

@@ -1,3 +1,7 @@
+"""
+Header serialization.
+"""
+
 import struct
 from enum import Flag, auto
 from typing import TypedDict

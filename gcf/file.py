@@ -1,3 +1,9 @@
+"""
+File-based GCF handling utilities.
+
+Functions in this module require the supplied file objects being seekable.
+"""
+
 import io
 from typing import BinaryIO, Union, cast
 
@@ -81,7 +87,7 @@ def read_extended_resource_descriptor(
 
     return cast(
         ExtendedResourceDescriptor,
-        deserializers.get(resource_type, nop_deserializer)(raw_extended_descriptor, common_descriptor)
+        deserializers.get(resource_type, nop_deserializer)(raw_extended_descriptor, common_descriptor),
     )
 
 
@@ -103,7 +109,7 @@ def write_extended_resource_descriptor(fileobj: BinaryIO, descriptor: ExtendedRe
 
 
 def skip_padding(fileobj: BinaryIO, header: Header):
-    is_alignment_required = not (header["flags"] & ContainerFlags.UNPADDED)
+    is_alignment_required = not header["flags"] & ContainerFlags.UNPADDED
 
     if is_alignment_required:
         current_offset = fileobj.tell()

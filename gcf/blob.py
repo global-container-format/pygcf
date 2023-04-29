@@ -1,3 +1,7 @@
+"""
+Blob resource type serialization.
+"""
+
 import struct
 from typing import Optional
 

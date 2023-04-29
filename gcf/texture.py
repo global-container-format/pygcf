@@ -1,3 +1,7 @@
+"""
+Texture resource serialization.
+"""
+
 import struct
 from enum import IntFlag
 from typing import List, Optional, TypedDict

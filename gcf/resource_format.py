@@ -1,5 +1,5 @@
 """
-Format constants imported from the Vulkan specification.
+GCF supported format constants imported from the Vulkan specification.
 
 Spec: https://registry.khronos.org/vulkan/specs/1.2-extensions/html/chap47.html#VkFormat
 """

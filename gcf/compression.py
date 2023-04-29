@@ -63,8 +63,8 @@ COMPRESSOR_TABLE = {
 def compress(data: bytes, supercompression_scheme: int) -> bytes:
     try:
         compressor, _ = COMPRESSOR_TABLE[supercompression_scheme]
-    except KeyError:
-        raise ValueError("Unknown supercompression scheme", supercompression_scheme)
+    except KeyError as exc:
+        raise ValueError("Unknown supercompression scheme", supercompression_scheme) from exc
 
     return compressor(data)
 

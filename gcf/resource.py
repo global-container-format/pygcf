@@ -1,3 +1,7 @@
+"""
+Common resource descriptor serialization.
+"""
+
 import struct
 from enum import IntEnum, unique
 from typing import TypedDict
