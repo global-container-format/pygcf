@@ -8,6 +8,7 @@ from .resource import SupercompressionScheme
 
 def compress_deflate(data, level=6):
     """Deflate compression function."""
+
     compressor = zlib.compressobj(level, wbits=-15)
     compressed_data = compressor.compress(data)
     compressed_data += compressor.flush()
@@ -17,11 +18,13 @@ def compress_deflate(data, level=6):
 
 def decompress_deflate(data):
     """Deflate decompression function."""
+
     return zlib.decompress(data, wbits=-15)
 
 
 def compress_zlib(data, level=6):
     """ZLib compression function."""
+
     compressor = zlib.compressobj(level, wbits=15)
 
     data = compressor.compress(data)
@@ -32,6 +35,7 @@ def compress_zlib(data, level=6):
 
 def decompress_zlib(data):
     """ZLib decompression function."""
+
     return zlib.decompress(data, wbits=15)
 
 
@@ -40,6 +44,7 @@ def compress_identity(data, level=None):  # pylint: disable=unused-argument
 
     Will return the input data. Any other argument is ignored.
     """
+
     return data
 
 
@@ -48,6 +53,7 @@ def decompress_identity(data):
 
     Will return the input data.
     """
+
     return data
 
 
@@ -61,6 +67,14 @@ COMPRESSOR_TABLE = {
 
 
 def compress(data: bytes, supercompression_scheme: int) -> bytes:
+    """Compress data by using one of the registered supercompression schemes.
+
+        :param data: The uncompressed data.
+        :param supercompression_scheme: The supercompression scheme ID.
+
+        :returns: The compressed data.
+    """
+
     try:
         compressor, _ = COMPRESSOR_TABLE[supercompression_scheme]
     except KeyError as exc:
@@ -70,6 +84,14 @@ def compress(data: bytes, supercompression_scheme: int) -> bytes:
 
 
 def decompress(data: bytes, supercompression_scheme: int) -> bytes:
+    """Decompress data by using one of the registered supercompression schemes.
+
+        :param data: The compressed data.
+        :param supercompression_scheme: The supercompression scheme ID.
+
+        :returns: The decompressed data.
+    """
+
     try:
         _, decompressor = COMPRESSOR_TABLE[supercompression_scheme]
     except KeyError as exc:
