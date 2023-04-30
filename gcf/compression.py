@@ -69,10 +69,10 @@ COMPRESSOR_TABLE = {
 def compress(data: bytes, supercompression_scheme: int) -> bytes:
     """Compress data by using one of the registered supercompression schemes.
 
-        :param data: The uncompressed data.
-        :param supercompression_scheme: The supercompression scheme ID.
+    :param data: The uncompressed data.
+    :param supercompression_scheme: The supercompression scheme ID.
 
-        :returns: The compressed data.
+    :returns: The compressed data.
     """
 
     try:
@@ -86,10 +86,10 @@ def compress(data: bytes, supercompression_scheme: int) -> bytes:
 def decompress(data: bytes, supercompression_scheme: int) -> bytes:
     """Decompress data by using one of the registered supercompression schemes.
 
-        :param data: The compressed data.
-        :param supercompression_scheme: The supercompression scheme ID.
+    :param data: The compressed data.
+    :param supercompression_scheme: The supercompression scheme ID.
 
-        :returns: The decompressed data.
+    :returns: The decompressed data.
     """
 
     try:

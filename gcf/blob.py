@@ -30,11 +30,11 @@ def make_blob_resource_descriptor(
 ) -> BlobResourceDescriptor:
     """Create a new blob resource descriptor.
 
-        :param compressed_data_size: The compressed blob data size.
-        :param uncompressed_data_size: The size of the data before compression.
-        :param supercompression_scheme: The supercompression scheme as passed to gcf.compression.compress().
+    :param compressed_data_size: The compressed blob data size.
+    :param uncompressed_data_size: The size of the data before compression.
+    :param supercompression_scheme: The supercompression scheme as passed to gcf.compression.compress().
 
-        :returns: The blob resource descriptor.
+    :returns: The blob resource descriptor.
     """
 
     return {
@@ -50,9 +50,9 @@ def make_blob_resource_descriptor(
 def serialize_blob_descriptor(descriptor: BlobResourceDescriptor) -> bytes:
     """Serialize a blob resource descriptor.
 
-        :param descriptor: The descriptor object.
+    :param descriptor: The descriptor object.
 
-        :returns: The serialized descriptor.
+    :returns: The serialized descriptor.
     """
     common_descriptor_data = serialize_common_resource_descriptor(descriptor)
     extended_descriptor_data = struct.pack(EXTENDED_DESCRIPTOR_FORMAT, descriptor["uncompressed_size"])
@@ -65,13 +65,13 @@ def deserialize_blob_descriptor(
 ) -> BlobResourceDescriptor:
     """Deserialize a blob resource descriptor.
 
-        This function will not attempt to deserialize the common descriptor a second time
-        if this is provided via argument.
+    This function will not attempt to deserialize the common descriptor a second time
+    if this is provided via argument.
 
-        :param raw: The composite descriptor bytes.
-        :param common_descriptor: The common_descriptor if already deserialized or None.
+    :param raw: The composite descriptor bytes.
+    :param common_descriptor: The common_descriptor if already deserialized or None.
 
-        :returns: The blob descriptor.
+    :returns: The blob descriptor.
     """
     if len(raw) < TOTAL_DESCRIPTOR_SIZE:
         raise ValueError("Invalid blob descriptor data length", len(raw))

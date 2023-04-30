@@ -40,10 +40,10 @@ def compute_mip_level_resize_factor(mip_level: int):
 def align_size(orig_size: int, alignment: int) -> int:
     """Align a size value to a given boundary.
 
-        :param orig_size: The original size to align.
-        :param alignment: The alignment boundary to align to.
+    :param orig_size: The original size to align.
+    :param alignment: The alignment boundary to align to.
 
-        :returns: The input size, aligned according to the given constraint.
+    :returns: The input size, aligned according to the given constraint.
     """
 
     assert not alignment & (alignment - 1)  # must be power of 2

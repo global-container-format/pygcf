@@ -55,9 +55,9 @@ class MipLevelDescriptor(TypedDict):
 def serialize_mip_level_descriptor(descriptor: MipLevelDescriptor) -> bytes:
     """Serialize a mip level descriptor.
 
-        :param descriptor: The descriptor object.
+    :param descriptor: The descriptor object.
 
-        :returns: A bytes object containing the serialized descriptor.
+    :returns: A bytes object containing the serialized descriptor.
     """
 
     return struct.pack(
@@ -74,9 +74,9 @@ def serialize_mip_level_descriptor(descriptor: MipLevelDescriptor) -> bytes:
 def deserialize_mip_level_descriptor(raw: bytes) -> MipLevelDescriptor:
     """Deserialize a mip level descriptor.
 
-        :param raw: A bytes object containing the serialized descriptor.
+    :param raw: A bytes object containing the serialized descriptor.
 
-        :returns: The descriptor object.
+    :returns: The descriptor object.
     """
 
     if len(raw) < MIP_LEVEL_SIZE:
@@ -96,9 +96,9 @@ def deserialize_mip_level_descriptor(raw: bytes) -> MipLevelDescriptor:
 def serialize_texture_resource_descriptor(descriptor: TextureResourceDescriptor) -> bytes:
     """Serialize a texture extended resource descriptor.
 
-        :param descriptor: The descriptor object.
+    :param descriptor: The descriptor object.
 
-        :returns: A bytes object containing the serialized descriptor.
+    :returns: A bytes object containing the serialized descriptor.
     """
 
     common_data = serialize_common_resource_descriptor(descriptor)
@@ -123,9 +123,9 @@ def deserialize_texture_resource_descriptor(
 ) -> TextureResourceDescriptor:
     """Deserialize a texture extended resource descriptor.
 
-        :param raw: A bytes object containing the serialized descriptor.
+    :param raw: A bytes object containing the serialized descriptor.
 
-        :returns: The descriptor object.
+    :returns: The descriptor object.
     """
 
     if len(raw) < TOTAL_DESCRIPTOR_SIZE:
@@ -149,10 +149,10 @@ def deserialize_texture_resource_descriptor(
 def deserialize_mip_level_data(raw: bytes, descriptor: TextureResourceDescriptor) -> List[bytes]:
     """Deserialize a texture mip level data.
 
-        :param raw: A bytes object containing the serialized data.
-        :param descriptor: The texture resource descriptor.
+    :param raw: A bytes object containing the serialized data.
+    :param descriptor: The texture resource descriptor.
 
-        :returns: A list of bytes objects, each representing the data of a given texture layer.
+    :returns: A list of bytes objects, each representing the data of a given texture layer.
     """
 
     supercompression_scheme = descriptor["supercompression_scheme"]
@@ -175,10 +175,10 @@ def deserialize_mip_level_data(raw: bytes, descriptor: TextureResourceDescriptor
 def serialize_mip_level_data(layers: List[bytes], descriptor: TextureResourceDescriptor) -> bytes:
     """Serialize a texture mip level data.
 
-        :param layers: A list of bytes objects, each representing the data of a given texture layer.
-        :param descriptor: The texture resource descriptor.
+    :param layers: A list of bytes objects, each representing the data of a given texture layer.
+    :param descriptor: The texture resource descriptor.
 
-        :returns: A bytes object containing the serialized data.
+    :returns: A bytes object containing the serialized data.
     """
 
     supercompression_scheme = descriptor["supercompression_scheme"]

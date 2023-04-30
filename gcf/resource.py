@@ -42,9 +42,9 @@ class CommonResourceDescriptor(TypedDict):
 def serialize_common_resource_descriptor(descriptor: CommonResourceDescriptor) -> bytes:
     """Serialize a common resource descriptor.
 
-        :param descriptor: The descriptor object.
+    :param descriptor: The descriptor object.
 
-        :returns: A bytes object containing the serialized descriptor.
+    :returns: A bytes object containing the serialized descriptor.
     """
 
     return struct.pack(
@@ -60,9 +60,9 @@ def serialize_common_resource_descriptor(descriptor: CommonResourceDescriptor) -
 def deserialize_common_resource_descriptor(raw: bytes) -> CommonResourceDescriptor:
     """Deserialize a common resource descriptor.
 
-        :param raw: A bytes object containing the serialized descriptor.
+    :param raw: A bytes object containing the serialized descriptor.
 
-        :returns: The descriptor object.
+    :returns: The descriptor object.
     """
 
     if len(raw) < COMMON_DESCRIPTOR_SIZE:
