@@ -23,6 +23,9 @@ from .texture import (
     deserialize_texture_resource_descriptor,
     serialize_mip_level_descriptor,
     serialize_texture_resource_descriptor,
+    make_texture_resource_descriptor,
+    serialize_mip_level_data,
+    deserialize_mip_level_data
 )
 from .compression import SupercompressionScheme
 from .resource_format import Format
