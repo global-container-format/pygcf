@@ -31,6 +31,8 @@ class TextureFlags(IntFlag):
 
 
 class TextureResourceDescriptor(CommonResourceDescriptor):
+    """A texture extended descriptor object."""
+
     base_width: int
     base_height: int
     base_depth: int
@@ -41,6 +43,8 @@ class TextureResourceDescriptor(CommonResourceDescriptor):
 
 
 class MipLevelDescriptor(TypedDict):
+    """A texture mip level descriptor."""
+
     compressed_size: int
     uncompressed_size: int
     row_stride: int
@@ -49,6 +53,13 @@ class MipLevelDescriptor(TypedDict):
 
 
 def serialize_mip_level_descriptor(descriptor: MipLevelDescriptor) -> bytes:
+    """Serialize a mip level descriptor.
+
+        :param descriptor: The descriptor object.
+
+        :returns: A bytes object containing the serialized descriptor.
+    """
+
     return struct.pack(
         MIP_LEVEL_FORMAT,
         descriptor["compressed_size"],
@@ -61,6 +72,13 @@ def serialize_mip_level_descriptor(descriptor: MipLevelDescriptor) -> bytes:
 
 
 def deserialize_mip_level_descriptor(raw: bytes) -> MipLevelDescriptor:
+    """Deserialize a mip level descriptor.
+
+        :param raw: A bytes object containing the serialized descriptor.
+
+        :returns: The descriptor object.
+    """
+
     if len(raw) < MIP_LEVEL_SIZE:
         raise ValueError("Invalid mip level data size", len(raw))
 
@@ -76,6 +94,13 @@ def deserialize_mip_level_descriptor(raw: bytes) -> MipLevelDescriptor:
 
 
 def serialize_texture_resource_descriptor(descriptor: TextureResourceDescriptor) -> bytes:
+    """Serialize a texture extended resource descriptor.
+
+        :param descriptor: The descriptor object.
+
+        :returns: A bytes object containing the serialized descriptor.
+    """
+
     common_data = serialize_common_resource_descriptor(descriptor)
 
     extended_data = struct.pack(
@@ -96,6 +121,13 @@ def serialize_texture_resource_descriptor(descriptor: TextureResourceDescriptor)
 def deserialize_texture_resource_descriptor(
     raw: bytes, common_descriptor: Optional[CommonResourceDescriptor] = None
 ) -> TextureResourceDescriptor:
+    """Deserialize a texture extended resource descriptor.
+
+        :param raw: A bytes object containing the serialized descriptor.
+
+        :returns: The descriptor object.
+    """
+
     if len(raw) < TOTAL_DESCRIPTOR_SIZE:
         raise ValueError("Invalid texture descriptor data size", len(raw))
 
@@ -115,6 +147,14 @@ def deserialize_texture_resource_descriptor(
 
 
 def deserialize_mip_level_data(raw: bytes, descriptor: TextureResourceDescriptor) -> List[bytes]:
+    """Deserialize a texture mip level data.
+
+        :param raw: A bytes object containing the serialized data.
+        :param descriptor: The texture resource descriptor.
+
+        :returns: A list of bytes objects, each representing the data of a given texture layer.
+    """
+
     supercompression_scheme = descriptor["supercompression_scheme"]
     layer_count = descriptor["layer_count"]
     decompressed_level = decompress(raw, supercompression_scheme)
@@ -133,6 +173,14 @@ def deserialize_mip_level_data(raw: bytes, descriptor: TextureResourceDescriptor
 
 
 def serialize_mip_level_data(layers: List[bytes], descriptor: TextureResourceDescriptor) -> bytes:
+    """Serialize a texture mip level data.
+
+        :param layers: A list of bytes objects, each representing the data of a given texture layer.
+        :param descriptor: The texture resource descriptor.
+
+        :returns: A bytes object containing the serialized data.
+    """
+
     supercompression_scheme = descriptor["supercompression_scheme"]
     layer_count = descriptor["layer_count"]
 

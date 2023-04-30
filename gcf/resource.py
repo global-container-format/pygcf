@@ -30,6 +30,8 @@ class ResourceType(IntEnum):
 
 
 class CommonResourceDescriptor(TypedDict):
+    """The common portion of a GCF resource descriptor."""
+
     type: int
     format: int
     content_size: int
@@ -38,6 +40,13 @@ class CommonResourceDescriptor(TypedDict):
 
 
 def serialize_common_resource_descriptor(descriptor: CommonResourceDescriptor) -> bytes:
+    """Serialize a common resource descriptor.
+
+        :param descriptor: The descriptor object.
+
+        :returns: A bytes object containing the serialized descriptor.
+    """
+
     return struct.pack(
         COMMON_DESCRIPTOR_FORMAT,
         descriptor["type"],
@@ -49,6 +58,13 @@ def serialize_common_resource_descriptor(descriptor: CommonResourceDescriptor) -
 
 
 def deserialize_common_resource_descriptor(raw: bytes) -> CommonResourceDescriptor:
+    """Deserialize a common resource descriptor.
+
+        :param raw: A bytes object containing the serialized descriptor.
+
+        :returns: The descriptor object.
+    """
+
     if len(raw) < COMMON_DESCRIPTOR_SIZE:
         raise ValueError("Invalid common resource descriptor data size", len(raw))
 

@@ -52,7 +52,7 @@ def serialize_header(header: Header) -> bytes:
 def deserialize_header(raw: bytes) -> Header:
     """Serialize a GCF file header.
 
-        :param header: A bytes object containing the serialized representation of the header.
+        :param raw: A bytes object containing the serialized representation of the header.
 
         :returns: A header object.
     """
