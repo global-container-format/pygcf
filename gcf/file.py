@@ -35,6 +35,14 @@ ExtendedResourceDescriptor = Union[BlobResourceDescriptor, TextureResourceDescri
 
 
 def read_header(fileobj: BinaryIO, expected_version=DEFAULT_VERSION) -> Header:
+    """Read a GCF header from a file object.
+
+        :param fileobj: The file object.
+        :param expected_version: The expected GCF version. If the version mismatches, a value error is raised.
+
+        :returns: The read header.
+    """
+
     raw_header = fileobj.read(HEADER_SIZE)
     expected_magic_number = make_magic_number(expected_version)
     header = deserialize_header(raw_header)
@@ -46,10 +54,23 @@ def read_header(fileobj: BinaryIO, expected_version=DEFAULT_VERSION) -> Header:
 
 
 def write_header(fileobj: BinaryIO, header: Header):
+    """Write a GCF header to a file object.
+
+        :param fileobj: The file object.
+        :param header: The header object.
+    """
+
     fileobj.write(serialize_header(header))
 
 
 def read_common_resource_descriptor(fileobj: BinaryIO) -> CommonResourceDescriptor:
+    """Read a common resource descriptor from a file object.
+
+        :param fileobj: The file object.
+
+        :returns: The read descriptor.
+    """
+
     raw_descriptor = fileobj.read(COMMON_DESCRIPTOR_SIZE)
     descriptor = deserialize_common_resource_descriptor(raw_descriptor)
 
@@ -57,10 +78,23 @@ def read_common_resource_descriptor(fileobj: BinaryIO) -> CommonResourceDescript
 
 
 def write_common_resource_descriptor(fileobj: BinaryIO, descriptor: CommonResourceDescriptor):
+    """Write a common resource descriptor to a file object.
+
+        :param fileobj: The file object.
+        :param descriptor: The descriptor object.
+    """
+
     fileobj.write(serialize_common_resource_descriptor(descriptor))
 
 
 def skip_resource(fileobj: BinaryIO, common_descriptor: CommonResourceDescriptor, header: Header):
+    """Skip a resource from a GCF file.
+
+        :param fileobj: The file object.
+        :param common_descriptor: The common descriptor object of the resource to skip.
+        :param header: The GCF file header.
+    """
+
     extended_descriptor_size = common_descriptor["extension_size"]
     content_data_size = common_descriptor["content_size"]
     total_skip_size = extended_descriptor_size + content_data_size
@@ -73,6 +107,17 @@ def skip_resource(fileobj: BinaryIO, common_descriptor: CommonResourceDescriptor
 def read_extended_resource_descriptor(
     fileobj: BinaryIO, common_descriptor: CommonResourceDescriptor
 ) -> ExtendedResourceDescriptor:
+    """Read an extended resource descriptor from a file object.
+
+        The returned extended descriptor will be deserialized if it's a standard one
+        or returned as a bytes object if it's custom.
+
+        :param fileobj: The file object.
+        :param common_descriptor: The common descriptor associated with the extended descriptor to read.
+
+        :returns: The read descriptor.
+    """
+
     extended_descriptor_size = common_descriptor["extension_size"]
     resource_type = common_descriptor["type"]
     raw_extended_descriptor = fileobj.read(extended_descriptor_size)
@@ -92,6 +137,15 @@ def read_extended_resource_descriptor(
 
 
 def write_extended_resource_descriptor(fileobj: BinaryIO, descriptor: ExtendedResourceDescriptor):
+    """Write an extended resource descriptor to a file object.
+
+        The provided descriptor can either be a known descriptor object or a bytes object.
+        This is especially useful when writing custom descriptors.
+
+        :param fileobj: The file object.
+        :param descriptor: The descriptor object.
+    """
+
     serializers = {
         TextureResourceDescriptor: serialize_texture_resource_descriptor,
         BlobResourceDescriptor: serialize_blob_descriptor,
@@ -109,6 +163,12 @@ def write_extended_resource_descriptor(fileobj: BinaryIO, descriptor: ExtendedRe
 
 
 def skip_padding(fileobj: BinaryIO, header: Header):
+    """Skip padding between two resources from a GCF file.
+
+        :param fileobj: The file object.
+        :param header: The GCF file header.
+    """
+
     is_alignment_required = not header["flags"] & ContainerFlags.UNPADDED
 
     if is_alignment_required:
