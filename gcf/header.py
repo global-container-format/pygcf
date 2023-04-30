@@ -19,6 +19,8 @@ class ContainerFlags(Flag):
 
 
 class Header(TypedDict):
+    """GCF file header."""
+
     magic: int
     resource_count: int
     flags: ContainerFlags
@@ -37,10 +39,24 @@ def make_magic_number(version: int = DEFAULT_VERSION) -> bytes:
 
 
 def serialize_header(header: Header) -> bytes:
+    """Serialize a GCF file header.
+
+        :param header: The header object.
+
+        :returns: A bytes object containing the serialized representation of the header.
+    """
+
     return struct.pack(HEADER_FORMAT, header["magic"], header["resource_count"], header["flags"])
 
 
 def deserialize_header(raw: bytes) -> Header:
+    """Serialize a GCF file header.
+
+        :param header: A bytes object containing the serialized representation of the header.
+
+        :returns: A header object.
+    """
+
     if not len(raw) == HEADER_SIZE:
         raise ValueError("Invalid header data size", len(raw))
 
