@@ -3,7 +3,18 @@ GCF resource compression and decompression.
 """
 import zlib
 
-from .resource import SupercompressionScheme
+from enum import IntEnum, unique
+
+
+@unique
+class SupercompressionScheme(IntEnum):
+    """Supported standard supercompression schemes."""
+
+    NO_COMPRESSION = 0
+    ZLIB = 1
+    DEFLATE = 2
+    TEST = 0xFFFF
+
 
 
 def compress_deflate(data, level=6):
