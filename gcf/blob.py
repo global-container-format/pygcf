@@ -73,7 +73,11 @@ def deserialize_blob_descriptor(
 
     :returns: The blob descriptor.
     """
-    if len(raw) < TOTAL_DESCRIPTOR_SIZE:
+    len_raw = len(raw)
+    is_valid_composite_descriptor_size = common_descriptor and len_raw >= TOTAL_DESCRIPTOR_SIZE
+    is_valid_extended_descriptor_size = (not common_descriptor) and len_raw >= EXTENDED_DESCRIPTOR_SIZE
+
+    if not (is_valid_composite_descriptor_size or is_valid_extended_descriptor_size):
         raise ValueError("Invalid blob descriptor data length", len(raw))
 
     common_descriptor = common_descriptor or deserialize_common_resource_descriptor(raw)

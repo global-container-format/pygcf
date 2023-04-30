@@ -6,13 +6,15 @@ import struct
 from enum import IntFlag
 from typing import List, Optional, TypedDict
 
-from .compression import compress, decompress
+from .compression import compress, decompress, SupercompressionScheme
 from .resource import (
     COMMON_DESCRIPTOR_SIZE,
     CommonResourceDescriptor,
+    ResourceType,
     deserialize_common_resource_descriptor,
     serialize_common_resource_descriptor,
 )
+from .resource_format import Format
 
 EXTENDED_DESCRIPTOR_FORMAT = "=3H2BHIH"
 EXTENDED_DESCRIPTOR_SIZE = struct.calcsize(EXTENDED_DESCRIPTOR_FORMAT)
@@ -50,6 +52,28 @@ class MipLevelDescriptor(TypedDict):
     row_stride: int
     slice_stride: int
     layer_stride: int
+
+
+def make_texture_resource_descriptor(
+        *, format: Format, compressed_content_size: int,
+        supercompression_scheme: SupercompressionScheme,
+        base_width: int, base_height: int = 1, base_depth: int = 1,
+        layer_count: int = 1, mip_level_count: int = 1, texture_group: int = 0,
+        flags: TextureFlags) -> TextureResourceDescriptor:
+    return {
+        "type": ResourceType.TEXTURE.value,
+        "format": format,
+        "content_size": compressed_content_size,
+        "extension_size": EXTENDED_DESCRIPTOR_SIZE,
+        "supercompression_scheme": supercompression_scheme,
+        "base_width":base_width,
+        "base_height": base_height,
+        "base_depth": base_depth,
+        "layer_count": layer_count,
+        "mip_level_count": mip_level_count,
+        "flags": flags,
+        "texture_group": texture_group
+    }
 
 
 def serialize_mip_level_descriptor(descriptor: MipLevelDescriptor) -> bytes:
@@ -141,7 +165,7 @@ def deserialize_texture_resource_descriptor(
         "base_depth": extended_fields[2],
         "layer_count": extended_fields[3],
         "mip_level_count": extended_fields[4],
-        "flags": extended_fields[5],
+        "flags": TextureFlags(extended_fields[5]),
         "texture_group": extended_fields[6],
     }
 

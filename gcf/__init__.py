@@ -25,3 +25,4 @@ from .texture import (
     serialize_texture_resource_descriptor,
 )
 from .compression import SupercompressionScheme
+from .resource_format import Format

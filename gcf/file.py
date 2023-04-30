@@ -31,7 +31,7 @@ from .texture import (
 )
 from .util import align_size
 
-ExtendedResourceDescriptor = Union[BlobResourceDescriptor, TextureResourceDescriptor, bytes]
+CompositeResourceDescriptor = Union[BlobResourceDescriptor, TextureResourceDescriptor, bytes]
 
 
 def read_header(fileobj: BinaryIO, expected_version=DEFAULT_VERSION) -> Header:
@@ -104,23 +104,22 @@ def skip_resource(fileobj: BinaryIO, common_descriptor: CommonResourceDescriptor
     skip_padding(fileobj, header)
 
 
-def read_extended_resource_descriptor(
-    fileobj: BinaryIO, common_descriptor: CommonResourceDescriptor
-) -> ExtendedResourceDescriptor:
-    """Read an extended resource descriptor from a file object.
+def read_composite_descriptor(fileobj: BinaryIO) -> CompositeResourceDescriptor:
+    """Read a composite resource descriptor from a file object.
 
-    The returned extended descriptor will be deserialized if it's a standard one
+    The returned composite descriptor will be deserialized if it's a standard one
     or returned as a bytes object if it's custom.
 
     :param fileobj: The file object.
-    :param common_descriptor: The common descriptor associated with the extended descriptor to read.
 
-    :returns: The read descriptor.
+    :returns: The read composite descriptor.
     """
-
+    raw_common_descriptor = fileobj.read(COMMON_DESCRIPTOR_SIZE)
+    common_descriptor = deserialize_common_resource_descriptor(raw_common_descriptor)
     extended_descriptor_size = common_descriptor["extension_size"]
     resource_type = common_descriptor["type"]
     raw_extended_descriptor = fileobj.read(extended_descriptor_size)
+    full_descriptor = raw_common_descriptor + raw_extended_descriptor
 
     deserializers = {
         ResourceType.BLOB.value: deserialize_blob_descriptor,
@@ -131,13 +130,13 @@ def read_extended_resource_descriptor(
         return raw
 
     return cast(
-        ExtendedResourceDescriptor,
-        deserializers.get(resource_type, nop_deserializer)(raw_extended_descriptor, common_descriptor),
+        CompositeResourceDescriptor,
+        deserializers.get(resource_type, nop_deserializer)(full_descriptor, common_descriptor),
     )
 
 
-def write_extended_resource_descriptor(fileobj: BinaryIO, descriptor: ExtendedResourceDescriptor):
-    """Write an extended resource descriptor to a file object.
+def write_composite_resource_descriptor(fileobj: BinaryIO, descriptor: CompositeResourceDescriptor):
+    """Write an composite resource descriptor to a file object.
 
     The provided descriptor can either be a known descriptor object or a bytes object.
     This is especially useful when writing custom descriptors.
@@ -146,16 +145,18 @@ def write_extended_resource_descriptor(fileobj: BinaryIO, descriptor: ExtendedRe
     :param descriptor: The descriptor object.
     """
 
-    serializers = {
-        TextureResourceDescriptor: serialize_texture_resource_descriptor,
-        BlobResourceDescriptor: serialize_blob_descriptor,
-        bytes: lambda x: x,
-    }
+    if isinstance(descriptor, bytes):
+        def serialize(x: bytes) -> bytes: return x
+    else:
+        serializer_map = {
+            ResourceType.TEXTURE.value: serialize_texture_resource_descriptor,
+            ResourceType.BLOB.value: serialize_blob_descriptor,
+        }
 
-    try:
-        serialize = serializers[type(descriptor)]
-    except KeyError as exc:
-        raise ValueError("Unknown descriptor object", descriptor) from exc
+        try:
+            serialize = serializer_map[descriptor["type"]]
+        except KeyError as exc:
+            raise ValueError("Unknown descriptor object", descriptor) from exc
 
     raw_descriptor = serialize(descriptor)
 
@@ -169,10 +170,28 @@ def skip_padding(fileobj: BinaryIO, header: Header):
     :param header: The GCF file header.
     """
 
-    is_alignment_required = not header["flags"] & ContainerFlags.UNPADDED
+    is_alignment_required = not ContainerFlags(header["flags"]) & ContainerFlags.UNPADDED
 
     if is_alignment_required:
         current_offset = fileobj.tell()
         aligned_offset = align_size(current_offset, 8)
 
-        fileobj.seek(aligned_offset, io.SEEK_CUR)
+        fileobj.seek(aligned_offset)
+
+
+def write_padding(fileobj: BinaryIO, header: Header):
+    """Write padding between two resources.
+
+        :param fileobj: The file object.
+        :param header: The GCF file header.
+    """
+
+    if header["flags"] & ContainerFlags.UNPADDED:
+        return
+
+    origin = fileobj.tell()
+    aligned = align_size(origin, 8)
+    padding_size = aligned - origin
+    padding = b'\0' * padding_size
+
+    fileobj.write(padding)
