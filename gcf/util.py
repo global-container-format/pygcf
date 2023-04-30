@@ -18,6 +18,7 @@ def compute_mip_level_size(mip_level: int, base_width: int, base_height: int, ba
 
     :returns: A tuple containing the mip level width, height and depth.
     """
+
     mip_level_resize_factor = compute_mip_level_resize_factor(mip_level)
 
     def scale_size(base_size: int) -> int:
@@ -32,10 +33,19 @@ def compute_mip_level_resize_factor(mip_level: int):
     Compute the factor used to multiply the base image size to obtain the
     given mip level size.
     """
+
     return 0.5**mip_level
 
 
 def align_size(orig_size: int, alignment: int) -> int:
+    """Align a size value to a given boundary.
+
+        :param orig_size: The original size to align.
+        :param alignment: The alignment boundary to align to.
+
+        :returns: The input size, aligned according to the given constraint.
+    """
+
     assert not alignment & (alignment - 1)  # must be power of 2
     mask = alignment - 1
 
