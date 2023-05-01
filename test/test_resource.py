@@ -1,61 +1,51 @@
-from gcf import ContainerFlags, Header, Resource, ResourceDescriptor, ResourceType, _align_size
-from gcf.resource_format import Format
+import struct
+
+from gcf import (
+    CommonResourceDescriptor,
+    Format,
+    ResourceType,
+    SupercompressionScheme,
+    deserialize_common_resource_descriptor,
+    serialize_common_resource_descriptor,
+)
 
 
-class MyResource(Resource):
-    def __init__(self, descriptor: ResourceDescriptor, data_length=16):
-        super().__init__(descriptor)
+def test_serialize_deserialize_common_resource_descriptor():
+    expected_descriptor: CommonResourceDescriptor = {
+        "type": ResourceType.TEST.value,
+        "format": Format.TEST,
+        "content_size": 123,
+        "extension_size": 0,
+        "supercompression_scheme": SupercompressionScheme.TEST.value,
+    }
+    raw = serialize_common_resource_descriptor(expected_descriptor)
+    actual_descriptor = deserialize_common_resource_descriptor(raw)
 
-        self.data_length = data_length
-
-    @property
-    def content_data(self) -> bytes:
-        return bytes(range(self.data_length))
-
-
-def test_align_size():
-    assert _align_size(15, 16) == 16
-    assert _align_size(257, 256) == 512
-    assert _align_size(0, 2) == 0
-    assert _align_size(2, 2) == 2
+    assert expected_descriptor == actual_descriptor
 
 
-def test_init():
-    h = Header(1)
-    d = ResourceDescriptor(ResourceType.TEST, Format.UNDEFINED, 16, header=h)
-    r = MyResource(d)
+def test_serialize_common_resource_descriptor():
+    """Test against spec."""
 
-    assert r.descriptor == d
+    descriptor: CommonResourceDescriptor = {
+        "type": ResourceType.TEST.value,
+        "format": Format.TEST,
+        "content_size": 123,
+        "extension_size": 0,
+        "supercompression_scheme": SupercompressionScheme.TEST.value,
+    }
+    raw = serialize_common_resource_descriptor(descriptor)
 
+    (
+        actual_type,
+        actual_format,
+        actual_content_size,
+        actual_extension_size,
+        actual_supercompression_scheme,
+    ) = struct.unpack("=3I2H", raw)
 
-def test_serialize_without_padding():
-    h = Header(1)
-    d = ResourceDescriptor(ResourceType.TEST, Format.UNDEFINED, 16, header=h)
-    r = MyResource(d)
-
-    raw_descriptor = d.serialize()
-    raw_resource = r.serialize()
-
-    assert raw_resource == raw_descriptor + r.content_data
-
-
-def test_serialize_with_padding():
-    h = Header(1)
-    d = ResourceDescriptor(ResourceType.TEST, Format.UNDEFINED, 15, header=h)
-    r = MyResource(d, data_length=15)
-
-    raw_descriptor = d.serialize()
-    raw_resource = r.serialize()
-
-    assert raw_resource == raw_descriptor + r.content_data + b"\0"
-
-
-def test_serialize_unpadded():
-    h = Header(1, flags=[ContainerFlags.UNPADDED])
-    d = ResourceDescriptor(ResourceType.TEST, Format.UNDEFINED, 15, header=h)
-    r = MyResource(d, data_length=15)
-
-    raw_descriptor = d.serialize()
-    raw_resource = r.serialize()
-
-    assert raw_resource == raw_descriptor + r.content_data
+    assert actual_type == ResourceType.TEST.value
+    assert actual_format == Format.TEST.value
+    assert actual_content_size == 123
+    assert actual_extension_size == 0
+    assert actual_supercompression_scheme == SupercompressionScheme.TEST.value

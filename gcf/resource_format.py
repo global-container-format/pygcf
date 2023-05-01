@@ -1,5 +1,5 @@
 """
-Format constants imported from the Vulkan specification.
+GCF supported format constants imported from the Vulkan specification.
 
 Spec: https://registry.khronos.org/vulkan/specs/1.2-extensions/html/chap47.html#VkFormat
 """
@@ -194,3 +194,4 @@ class Format(IntEnum):
     ASTC_12X10_SRGB_BLOCK = 182
     ASTC_12X12_UNORM_BLOCK = 183
     ASTC_12X12_SRGB_BLOCK = 184
+    TEST = 0xFFFFFFFF

@@ -1,81 +1,35 @@
-import io
 import struct
 
-import pytest
-
-from gcf import ContainerFlags, Header
-
-# Example header with version 99, 5 resources and `Unpadded` flag
-RES_HEADER = b"GC99" + struct.pack("=2H", 5, ContainerFlags.UNPADDED.value)
-RES_HEADER_NOFLAGS = b"GC99" + struct.pack("=2H", 5, 0)
+from gcf import ContainerFlags, Header, deserialize_header, make_magic_number, serialize_header
 
 
-def test_init():
-    h = Header(5, [ContainerFlags.UNPADDED], version=99)
+def test_serialize_deserialize_header():
+    magic = make_magic_number()
+    expected_header: Header = {"magic": magic, "flags": ContainerFlags.UNPADDED, "resource_count": 666}
 
-    assert h.resource_count == 5
-    assert h.version == 99
-    assert len(h.flags) == 1
-    assert ContainerFlags.UNPADDED in h.flags
+    raw = serialize_header(expected_header)
+    actual_header = deserialize_header(raw)
 
-
-def test_is_gcf_file_unpadded():
-    h_padded = Header(5, None, version=99)
-    h_unpadded = Header(5, [ContainerFlags.UNPADDED], version=99)
-
-    assert h_unpadded.is_gcf_file_unpadded
-    assert not h_padded.is_gcf_file_unpadded
+    assert actual_header == expected_header
 
 
-def test_init_default():
-    h = Header(6)
+def test_serialize_header():
+    """Test against spec."""
 
-    assert h.resource_count == 6
-    assert h.version == Header.DEFAULT_VERSION
-    assert h.flags is not None and not h.flags
+    magic = make_magic_number()
+    expected_header: Header = {"magic": magic, "flags": ContainerFlags.UNPADDED, "resource_count": 666}
 
+    raw = serialize_header(expected_header)
 
-def test_serialize():
-    h = Header(5, [ContainerFlags.UNPADDED], version=99)
-    s = h.serialize()
+    (actual_magic, actual_resource_count, actual_flags) = struct.unpack("=I2H", raw)
 
-    assert s == RES_HEADER
-
-
-def test_serialize_noflags():
-    h = Header(5, version=99)
-    s = h.serialize()
-
-    assert s == RES_HEADER_NOFLAGS
+    assert actual_magic == magic
+    assert actual_resource_count == 666
+    assert actual_flags == ContainerFlags.UNPADDED.value
 
 
-def test_from_bytes():
-    h = Header.from_bytes(RES_HEADER, valid_version=99)
+def test_make_magic_number():
+    actual = make_magic_number(99)
+    (expected,) = struct.unpack("<I", b"GC99")
 
-    assert h.resource_count == 5
-    assert h.version == 99
-    assert len(h.flags) == 1
-    assert ContainerFlags.UNPADDED in h.flags
-
-
-def test_from_bytes_noflags():
-    h = Header.from_bytes(RES_HEADER_NOFLAGS, valid_version=99)
-
-    assert h.resource_count == 5
-    assert h.version == 99
-    assert h.flags is not None and not h.flags
-
-
-def test_from_bytes_wrong_version():
-    with pytest.raises(ValueError):
-        h = Header.from_bytes(RES_HEADER, valid_version=88)
-
-
-def test_from_file():
-    f = io.BytesIO(RES_HEADER)
-    h = Header.from_file(f, valid_version=99)
-
-    assert h.resource_count == 5
-    assert h.version == 99
-    assert len(h.flags) == 1
-    assert ContainerFlags.UNPADDED in h.flags
+    assert actual == expected

@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygcf"
-version = "4.0.0"
+version = "5.0.0"
 description = "The Global Container Format reference implementation."
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [{ name = "Alfredo Mungo" }]
-keywords = ["gcf", "global", "container", "game", "format", "texture", "generic", "dds", "ktx"]
+keywords = ["gcf", "global", "container", "game", "format", "texture"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",

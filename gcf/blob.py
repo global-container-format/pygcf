@@ -1,118 +1,89 @@
 """
-Blob resource.
-
-Spec: https://github.com/global-container-format/gcf-spec/blob/master/resources/blob.md
+Blob resource type serialization.
 """
-import struct
 
-from . import Header, Resource, ResourceDescriptor, ResourceType, SupercompressionScheme
-from .compress import COMPRESSOR_TABLE
+import struct
+from typing import Optional
+
+from .resource import (
+    COMMON_DESCRIPTOR_SIZE,
+    CommonResourceDescriptor,
+    ResourceType,
+    deserialize_common_resource_descriptor,
+    serialize_common_resource_descriptor,
+)
 from .resource_format import Format
 
-
-class BlobResourceDescriptor(ResourceDescriptor):
-    """A blob resource descriptor."""
-
-    TYPE_INFO_FORMAT = "=2Q"
-    TYPE_INFO_FORMAT_SIZE = struct.calcsize(TYPE_INFO_FORMAT)
-
-    def __init__(
-        self,
-        size: int,
-        /,
-        header: Header,
-        uncompressed_size: int,
-        supercompression_scheme: SupercompressionScheme = SupercompressionScheme.NO_COMPRESSION,
-    ):
-        """Create a new blob resource descriptor."""
-        super().__init__(
-            ResourceType.BLOB,
-            Format.UNDEFINED,
-            size,
-            header=header,
-            supercompression_scheme=supercompression_scheme,
-        )
-
-        self.uncompressed_size = uncompressed_size
-
-    @property
-    def type_info(self):
-        """Return the blob descriptor's type info."""
-        return struct.pack(self.TYPE_INFO_FORMAT, self.uncompressed_size, 0)
-
-    @classmethod
-    def from_resource_descriptor(cls, descriptor: ResourceDescriptor):
-        """Create a blob descriptor from a resource descriptor."""
-        if not isinstance(descriptor.type_info, bytes):
-            raise TypeError("Expected blob type info.")
-
-        fields = struct.unpack(cls.TYPE_INFO_FORMAT, descriptor.type_info)
-        uncompressed_size = fields[0]
-
-        return cls(
-            descriptor.size,
-            uncompressed_size=uncompressed_size,
-            supercompression_scheme=descriptor.supercompression_scheme,
-            header=descriptor.header,
-        )
-
-    @classmethod
-    def from_bytes(cls, raw: bytes, header: Header):
-        base_descriptor = ResourceDescriptor.from_bytes(raw, header)
-
-        return cls.from_resource_descriptor(base_descriptor)
-
-    @classmethod
-    def from_file(cls, fileobj, header: Header):
-        base_descriptor = ResourceDescriptor.from_file(fileobj, header)
-
-        return cls.from_resource_descriptor(base_descriptor)
+EXTENDED_DESCRIPTOR_FORMAT = "=Q"
+EXTENDED_DESCRIPTOR_SIZE = struct.calcsize(EXTENDED_DESCRIPTOR_FORMAT)
+TOTAL_DESCRIPTOR_SIZE = COMMON_DESCRIPTOR_SIZE + EXTENDED_DESCRIPTOR_SIZE
 
 
-class BlobResource(Resource):
-    """A blob resource."""
+class BlobResourceDescriptor(CommonResourceDescriptor):
+    """The resource descriptor for blob resources."""
 
-    def __init__(self, descriptor: BlobResourceDescriptor, data: bytes):
-        """Create a new blob resource from compressed data.
+    uncompressed_size: int
 
-        ARGUMENTS:
-            descriptor - The blob resource descriptor.
-            data - The compressed data.
-        """
-        super().__init__(descriptor)
 
-        self._data = data
+def make_blob_resource_descriptor(
+    compressed_data_size: int, uncompressed_data_size: int, supercompression_scheme: int
+) -> BlobResourceDescriptor:
+    """Create a new blob resource descriptor.
 
-    @property
-    def content_data(self) -> bytes:
-        return self._data
+    :param compressed_data_size: The compressed blob data size.
+    :param uncompressed_data_size: The size of the data before compression.
+    :param supercompression_scheme: The supercompression scheme as passed to gcf.compression.compress().
 
-    @classmethod
-    def from_uncompressed_data(
-        cls,
-        data: bytes,
-        /,
-        header: Header,
-        supercompression_scheme: SupercompressionScheme,
-    ):
-        """Create a new blob resource from uncompressed data.
+    :returns: The blob resource descriptor.
+    """
 
-        ARGUMENTS:
-            data - The uncompressed data.
-            header - The header.
-            supercompression_scheme - The supercompression scheme.
+    return {
+        "content_size": compressed_data_size,
+        "extension_size": EXTENDED_DESCRIPTOR_SIZE,
+        "format": Format.UNDEFINED.value,
+        "supercompression_scheme": supercompression_scheme,
+        "type": ResourceType.BLOB.value,
+        "uncompressed_size": uncompressed_data_size,
+    }
 
-        RETURN VALUE:
-            A new blob resource object.
-        """
-        compressor = COMPRESSOR_TABLE[supercompression_scheme][0]
-        compressed_data = compressor(data)
 
-        descriptor = BlobResourceDescriptor(
-            len(compressed_data),
-            header=header,
-            uncompressed_size=len(data),
-            supercompression_scheme=supercompression_scheme,
-        )
+def serialize_blob_descriptor(descriptor: BlobResourceDescriptor) -> bytes:
+    """Serialize a blob resource descriptor.
 
-        return cls(descriptor, compressed_data)
+    :param descriptor: The descriptor object.
+
+    :returns: The serialized descriptor.
+    """
+    common_descriptor_data = serialize_common_resource_descriptor(descriptor)
+    extended_descriptor_data = struct.pack(EXTENDED_DESCRIPTOR_FORMAT, descriptor["uncompressed_size"])
+
+    return common_descriptor_data + extended_descriptor_data
+
+
+def deserialize_blob_descriptor(
+    raw: bytes, common_descriptor: Optional[CommonResourceDescriptor] = None
+) -> BlobResourceDescriptor:
+    """Deserialize a blob resource descriptor.
+
+    This function will not attempt to deserialize the common descriptor a second time
+    if this is provided via argument.
+
+    :param raw: The composite descriptor bytes.
+    :param common_descriptor: The common_descriptor if already deserialized or None.
+
+    :returns: The blob descriptor.
+    """
+    len_raw = len(raw)
+    is_valid_composite_descriptor_size = common_descriptor and len_raw >= TOTAL_DESCRIPTOR_SIZE
+    is_valid_extended_descriptor_size = (not common_descriptor) and len_raw >= EXTENDED_DESCRIPTOR_SIZE
+
+    if not (is_valid_composite_descriptor_size or is_valid_extended_descriptor_size):
+        raise ValueError("Invalid blob descriptor data length", len(raw))
+
+    common_descriptor = common_descriptor or deserialize_common_resource_descriptor(raw)
+    extended_fields = struct.unpack(EXTENDED_DESCRIPTOR_FORMAT, raw[COMMON_DESCRIPTOR_SIZE:TOTAL_DESCRIPTOR_SIZE])
+
+    return {
+        **common_descriptor,  # type: ignore
+        "uncompressed_size": extended_fields[0],
+    }
