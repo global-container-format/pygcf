@@ -18,7 +18,7 @@ BLOB_RESOURCE_DESCRIPTOR = make_blob_resource_descriptor(100, 200, Supercompress
 
 TEXTURE_RESOURCE_DESCRIPTOR = make_texture_resource_descriptor(
     format_=Format.R8G8B8_SRGB,
-    compressed_content_size=123,
+    content_size=123,
     supercompression_scheme=SupercompressionScheme.TEST.value,
     base_width=100,
     base_height=100,

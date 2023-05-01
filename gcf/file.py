@@ -5,7 +5,8 @@ Functions in this module require the supplied file objects being seekable.
 """
 
 import io
-from typing import BinaryIO, Union, cast
+from functools import reduce
+from typing import BinaryIO, List, Tuple, Union, cast
 
 from .blob import BlobResourceDescriptor, deserialize_blob_descriptor, serialize_blob_descriptor
 from .header import (
@@ -25,8 +26,14 @@ from .resource import (
     serialize_common_resource_descriptor,
 )
 from .texture import (
+    MIP_LEVEL_SIZE,
+    MipLevelDescriptor,
     TextureResourceDescriptor,
+    deserialize_mip_level_data,
+    deserialize_mip_level_descriptor,
     deserialize_texture_resource_descriptor,
+    serialize_mip_level_data,
+    serialize_mip_level_descriptor,
     serialize_texture_resource_descriptor,
 )
 from .util import align_size
@@ -198,3 +205,67 @@ def write_padding(fileobj: BinaryIO, header: Header):
     padding = b"\0" * padding_size
 
     fileobj.write(padding)
+
+
+def write_mip_level_descriptor(fileobj: BinaryIO, descriptor: MipLevelDescriptor):
+    """Write a mip level descriptor to a file object.
+
+    :param fileobj: The file object.
+    :param descriptor: The descriptor object.
+    """
+
+    fileobj.write(serialize_mip_level_descriptor(descriptor))
+
+
+def read_mip_level_descriptor(fileobj: BinaryIO) -> MipLevelDescriptor:
+    """Read a mip level descriptor from a file object.
+
+    :param fileobj: The file object.
+    :returns:  The descriptor object.
+    """
+    raw = fileobj.read(MIP_LEVEL_SIZE)
+
+    return deserialize_mip_level_descriptor(raw)
+
+
+def read_mip_level(
+    fileobj: BinaryIO, texture_descriptor: TextureResourceDescriptor
+) -> Tuple[MipLevelDescriptor, List[bytes]]:
+    """Read a mip level and return its data.
+
+    :param fileobj: The file object.
+    :param texture_descriptor: The texture resource descriptor object.
+
+    :returns: A tuple containing the mip level descriptor and the list of uncompressed layers.
+    """
+
+    level_descriptor = read_mip_level_descriptor(fileobj)
+    raw_layers = fileobj.read(level_descriptor["compressed_size"])
+
+    return level_descriptor, deserialize_mip_level_data(raw_layers, texture_descriptor)
+
+
+def write_mip_level(
+    fileobj: BinaryIO, supercompression_scheme: int, mip_level_descriptor: MipLevelDescriptor, layers: List[bytes]
+):
+    """Write a mip level to file.
+
+    This function ignores the `compressed_size` and `uncompressed_size` mip level descriptor fields and replaces
+    their value when writing to file. `mip_level_descriptor` is not updated by this function.
+
+    :param fileobj: The file object.
+    :param supercompression_scheme: The supercompression scheme to compress the data.
+    :param mip_level_descriptor: The mip level descriptor object.
+    :param layers: The list of uncompressed layer data, one entry per layer.
+    """
+
+    mip_level_descriptor = mip_level_descriptor.copy()
+    raw_layers = serialize_mip_level_data(layers, supercompression_scheme)
+
+    # Override descriptor's data.
+    mip_level_descriptor["compressed_size"] = len(raw_layers)
+    mip_level_descriptor["uncompressed_size"] = reduce(lambda total, layer: total + len(layer), layers, 0)
+
+    write_mip_level_descriptor(fileobj, mip_level_descriptor)
+
+    fileobj.write(raw_layers)

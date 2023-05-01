@@ -57,8 +57,8 @@ class MipLevelDescriptor(TypedDict):
 def make_texture_resource_descriptor(
     *,
     format_: Format,
-    compressed_content_size: int,
-    supercompression_scheme: SupercompressionScheme,
+    content_size: int,
+    supercompression_scheme: int,
     base_width: int,
     base_height: int = 1,
     base_depth: int = 1,
@@ -72,7 +72,7 @@ def make_texture_resource_descriptor(
     return {
         "type": ResourceType.TEXTURE.value,
         "format": format_,
-        "content_size": compressed_content_size,
+        "content_size": content_size,
         "extension_size": EXTENDED_DESCRIPTOR_SIZE,
         "supercompression_scheme": supercompression_scheme,
         "base_width": base_width,
@@ -205,21 +205,14 @@ def deserialize_mip_level_data(raw: bytes, descriptor: TextureResourceDescriptor
     return layers
 
 
-def serialize_mip_level_data(layers: List[bytes], descriptor: TextureResourceDescriptor) -> bytes:
+def serialize_mip_level_data(layers: List[bytes], supercompression_scheme: int) -> bytes:
     """Serialize a texture mip level data.
 
     :param layers: A list of bytes objects, each representing the data of a given texture layer.
-    :param descriptor: The texture resource descriptor.
+    :param supercompression_scheme: The supercompression scheme to use.
 
     :returns: A bytes object containing the serialized data.
     """
-
-    supercompression_scheme = descriptor["supercompression_scheme"]
-    layer_count = descriptor["layer_count"]
-
-    if not layer_count == len(layers):
-        raise ValueError("Layer count doesn't match descriptor metadata.")
-
     layer_seq = b"".join(layers)
 
     return compress(layer_seq, supercompression_scheme)

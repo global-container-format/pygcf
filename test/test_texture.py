@@ -68,7 +68,7 @@ def test_serialize_texture_descriptor():
 def test_make_texture_resource_descriptor():
     descriptor = make_texture_resource_descriptor(
         format_=Format.R8G8B8_SINT,
-        compressed_content_size=123,
+        content_size=123,
         supercompression_scheme=SupercompressionScheme.ZLIB.value,
         base_width=1,
         base_height=2,
@@ -141,7 +141,7 @@ def test_serialize_deserialize_mip_level_data():
 
     descriptor = make_texture_resource_descriptor(
         format_=Format.R8_UINT,
-        compressed_content_size=123,
+        content_size=123,
         supercompression_scheme=SupercompressionScheme.DEFLATE.value,
         base_width=4,
         base_height=1,
@@ -152,7 +152,7 @@ def test_serialize_deserialize_mip_level_data():
         flags=TextureFlags.TEXTURE_1D,
     )
 
-    raw = serialize_mip_level_data(expected_layers, descriptor)
+    raw = serialize_mip_level_data(expected_layers, descriptor["supercompression_scheme"])
     actual_layers = deserialize_mip_level_data(raw, descriptor)
 
     assert actual_layers == expected_layers
@@ -165,7 +165,7 @@ def test_serialize_mip_level_data():
 
     descriptor = make_texture_resource_descriptor(
         format_=Format.R8_UINT,
-        compressed_content_size=123,
+        content_size=123,
         supercompression_scheme=SupercompressionScheme.NO_COMPRESSION.value,
         base_width=4,
         base_height=1,
@@ -176,7 +176,7 @@ def test_serialize_mip_level_data():
         flags=TextureFlags.TEXTURE_1D,
     )
 
-    raw = serialize_mip_level_data(layers, descriptor)
+    raw = serialize_mip_level_data(layers, descriptor["supercompression_scheme"])
 
     assert len(raw) == reduce(lambda x, layer: x + len(layer), layers, 0)
     assert raw[0] == layers[0][0]

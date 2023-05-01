@@ -26,7 +26,7 @@ class Header(TypedDict):
     flags: ContainerFlags
 
 
-def make_magic_number(version: int = DEFAULT_VERSION) -> bytes:
+def make_magic_number(version: int = DEFAULT_VERSION) -> int:
     """Return the magic number for a given GCF version."""
 
     if version > 99:

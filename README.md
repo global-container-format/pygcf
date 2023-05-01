@@ -60,7 +60,7 @@ black .
 pylint gcf
 
 # Validate typing
-mypy gcf
+mypy --check-untyped-defs gcf test
 ```
 
 ### Documentation
