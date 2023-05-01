@@ -6,7 +6,7 @@ import struct
 from enum import IntFlag
 from typing import List, Optional, TypedDict
 
-from .compression import compress, decompress, SupercompressionScheme
+from .compression import SupercompressionScheme, compress, decompress
 from .resource import (
     COMMON_DESCRIPTOR_SIZE,
     CommonResourceDescriptor,
@@ -55,24 +55,33 @@ class MipLevelDescriptor(TypedDict):
 
 
 def make_texture_resource_descriptor(
-        *, format: Format, compressed_content_size: int,
-        supercompression_scheme: SupercompressionScheme,
-        base_width: int, base_height: int = 1, base_depth: int = 1,
-        layer_count: int = 1, mip_level_count: int = 1, texture_group: int = 0,
-        flags: TextureFlags) -> TextureResourceDescriptor:
+    *,
+    format_: Format,
+    compressed_content_size: int,
+    supercompression_scheme: SupercompressionScheme,
+    base_width: int,
+    base_height: int = 1,
+    base_depth: int = 1,
+    layer_count: int = 1,
+    mip_level_count: int = 1,
+    texture_group: int = 0,
+    flags: TextureFlags
+) -> TextureResourceDescriptor:
+    """Make a texture resource descriptor."""
+
     return {
         "type": ResourceType.TEXTURE.value,
-        "format": format,
+        "format": format_,
         "content_size": compressed_content_size,
         "extension_size": EXTENDED_DESCRIPTOR_SIZE,
         "supercompression_scheme": supercompression_scheme,
-        "base_width":base_width,
+        "base_width": base_width,
         "base_height": base_height,
         "base_depth": base_depth,
         "layer_count": layer_count,
         "mip_level_count": mip_level_count,
         "flags": flags,
-        "texture_group": texture_group
+        "texture_group": texture_group,
     }
 
 

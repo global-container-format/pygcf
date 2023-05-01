@@ -1,6 +1,13 @@
 import struct
 
-from gcf import CommonResourceDescriptor, serialize_common_resource_descriptor, deserialize_common_resource_descriptor, ResourceType, Format, SupercompressionScheme
+from gcf import (
+    CommonResourceDescriptor,
+    Format,
+    ResourceType,
+    SupercompressionScheme,
+    deserialize_common_resource_descriptor,
+    serialize_common_resource_descriptor,
+)
 
 
 def test_serialize_deserialize_common_resource_descriptor():
@@ -9,7 +16,7 @@ def test_serialize_deserialize_common_resource_descriptor():
         "format": Format.TEST,
         "content_size": 123,
         "extension_size": 0,
-        "supercompression_scheme": SupercompressionScheme.TEST.value
+        "supercompression_scheme": SupercompressionScheme.TEST.value,
     }
     raw = serialize_common_resource_descriptor(expected_descriptor)
     actual_descriptor = deserialize_common_resource_descriptor(raw)
@@ -25,11 +32,17 @@ def test_serialize_common_resource_descriptor():
         "format": Format.TEST,
         "content_size": 123,
         "extension_size": 0,
-        "supercompression_scheme": SupercompressionScheme.TEST.value
+        "supercompression_scheme": SupercompressionScheme.TEST.value,
     }
     raw = serialize_common_resource_descriptor(descriptor)
 
-    (actual_type, actual_format, actual_content_size, actual_extension_size, actual_supercompression_scheme) = struct.unpack("=3I2H", raw)
+    (
+        actual_type,
+        actual_format,
+        actual_content_size,
+        actual_extension_size,
+        actual_supercompression_scheme,
+    ) = struct.unpack("=3I2H", raw)
 
     assert actual_type == ResourceType.TEST.value
     assert actual_format == Format.TEST.value

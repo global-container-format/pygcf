@@ -1,7 +1,22 @@
 import struct
-
 from functools import reduce
-from gcf import serialize_mip_level_descriptor, deserialize_mip_level_descriptor, serialize_texture_resource_descriptor, deserialize_texture_resource_descriptor, make_texture_resource_descriptor, Format, SupercompressionScheme, TextureFlags, ResourceType, texture, MipLevelDescriptor, serialize_mip_level_data, deserialize_mip_level_data
+
+from gcf import (
+    Format,
+    MipLevelDescriptor,
+    ResourceType,
+    SupercompressionScheme,
+    TextureFlags,
+    deserialize_mip_level_data,
+    deserialize_mip_level_descriptor,
+    deserialize_texture_resource_descriptor,
+    make_texture_resource_descriptor,
+    serialize_mip_level_data,
+    serialize_mip_level_descriptor,
+    serialize_texture_resource_descriptor,
+    texture,
+)
+
 from .fixtures import TEXTURE_RESOURCE_DESCRIPTOR
 
 
@@ -32,7 +47,7 @@ def test_serialize_texture_descriptor():
         actual_mip_level_count,
         actual_flags,
         actual_texture_group,
-        actual_rsvd
+        actual_rsvd,
     ) = struct.unpack("=3I2H3H2B2HI", raw)
 
     assert actual_type == descriptor["type"]
@@ -52,7 +67,7 @@ def test_serialize_texture_descriptor():
 
 def test_make_texture_resource_descriptor():
     descriptor = make_texture_resource_descriptor(
-        format=Format.R8G8B8_SINT,
+        format_=Format.R8G8B8_SINT,
         compressed_content_size=123,
         supercompression_scheme=SupercompressionScheme.ZLIB.value,
         base_width=1,
@@ -61,7 +76,7 @@ def test_make_texture_resource_descriptor():
         layer_count=4,
         mip_level_count=5,
         texture_group=66,
-        flags=TextureFlags.TEXTURE_3D
+        flags=TextureFlags.TEXTURE_3D,
     )
 
     assert descriptor["type"] == ResourceType.TEXTURE.value
@@ -84,7 +99,7 @@ def test_serialize_deserialize_mip_level_descriptor():
         "uncompressed_size": 345,
         "layer_stride": 5,
         "row_stride": 6,
-        "slice_stride": 7
+        "slice_stride": 7,
     }
     raw = serialize_mip_level_descriptor(expected_descriptor)
     actual_descriptor = deserialize_mip_level_descriptor(raw)
@@ -100,7 +115,7 @@ def test_serialize_mip_level_descriptor():
         "uncompressed_size": 345,
         "layer_stride": 5,
         "row_stride": 6,
-        "slice_stride": 7
+        "slice_stride": 7,
     }
     raw = serialize_mip_level_descriptor(descriptor)
 
@@ -110,7 +125,7 @@ def test_serialize_mip_level_descriptor():
         actual_row_stride,
         actual_slice_stride,
         actual_layer_stride,
-        rsvd
+        rsvd,
     ) = struct.unpack("=6I", raw)
 
     assert actual_compressed_size == descriptor["compressed_size"]
@@ -122,13 +137,10 @@ def test_serialize_mip_level_descriptor():
 
 
 def test_serialize_deserialize_mip_level_data():
-    expected_layers = [
-        b"abcd",
-        b"cdef"
-    ]
+    expected_layers = [b"abcd", b"cdef"]
 
     descriptor = make_texture_resource_descriptor(
-        format=Format.R8_UINT,
+        format_=Format.R8_UINT,
         compressed_content_size=123,
         supercompression_scheme=SupercompressionScheme.DEFLATE.value,
         base_width=4,
@@ -137,7 +149,7 @@ def test_serialize_deserialize_mip_level_data():
         layer_count=2,
         mip_level_count=5,
         texture_group=66,
-        flags=TextureFlags.TEXTURE_1D
+        flags=TextureFlags.TEXTURE_1D,
     )
 
     raw = serialize_mip_level_data(expected_layers, descriptor)
@@ -149,13 +161,10 @@ def test_serialize_deserialize_mip_level_data():
 def test_serialize_mip_level_data():
     """Test against spec."""
 
-    layers = [
-        b"abcd",
-        b"cdef"
-    ]
+    layers = [b"abcd", b"cdef"]
 
     descriptor = make_texture_resource_descriptor(
-        format=Format.R8_UINT,
+        format_=Format.R8_UINT,
         compressed_content_size=123,
         supercompression_scheme=SupercompressionScheme.NO_COMPRESSION.value,
         base_width=4,
@@ -164,7 +173,7 @@ def test_serialize_mip_level_data():
         layer_count=2,
         mip_level_count=5,
         texture_group=66,
-        flags=TextureFlags.TEXTURE_1D
+        flags=TextureFlags.TEXTURE_1D,
     )
 
     raw = serialize_mip_level_data(layers, descriptor)

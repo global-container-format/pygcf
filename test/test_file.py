@@ -1,19 +1,31 @@
 import io
+from typing import BinaryIO
+
 import pytest
 
-from typing import BinaryIO
-from gcf import ResourceType, Format, SupercompressionScheme, Header, CommonResourceDescriptor, make_magic_number, file, ContainerFlags
+from gcf import (
+    CommonResourceDescriptor,
+    ContainerFlags,
+    Format,
+    Header,
+    ResourceType,
+    SupercompressionScheme,
+    file,
+    make_magic_number,
+)
 from gcf.file import CompositeResourceDescriptor
-from .fixtures import BLOB_RESOURCE_DESCRIPTOR, TEXTURE_RESOURCE_DESCRIPTOR, CUSTOM_RESOURCE_DESCRIPTOR, two_resource_gcf_file
+
+from .fixtures import (
+    BLOB_RESOURCE_DESCRIPTOR,
+    CUSTOM_RESOURCE_DESCRIPTOR,
+    TEXTURE_RESOURCE_DESCRIPTOR,
+    two_resource_gcf_file,
+)
 
 
 def test_read_write_file():
     magic = make_magic_number()
-    expected_header: Header = {
-        "flags": ContainerFlags(0),
-        "magic": magic,
-        "resource_count": 123
-    }
+    expected_header: Header = {"flags": ContainerFlags(0), "magic": magic, "resource_count": 123}
     test_file = io.BytesIO()
 
     file.write_header(test_file, expected_header)
@@ -30,7 +42,7 @@ def test_read_write_common_resource_descriptor():
         "extension_size": 2,
         "format": Format.R8G8B8_SRGB,
         "supercompression_scheme": SupercompressionScheme.TEST.value,
-        "type": ResourceType.TEST.value
+        "type": ResourceType.TEST.value,
     }
     test_file = io.BytesIO()
 
@@ -42,11 +54,9 @@ def test_read_write_common_resource_descriptor():
     assert actual_descriptor == expected_descriptor
 
 
-@pytest.mark.parametrize("expected_descriptor", [
-    BLOB_RESOURCE_DESCRIPTOR,
-    TEXTURE_RESOURCE_DESCRIPTOR,
-    CUSTOM_RESOURCE_DESCRIPTOR
-])
+@pytest.mark.parametrize(
+    "expected_descriptor", [BLOB_RESOURCE_DESCRIPTOR, TEXTURE_RESOURCE_DESCRIPTOR, CUSTOM_RESOURCE_DESCRIPTOR]
+)
 def test_read_write_composite_resource_descriptor(expected_descriptor: CompositeResourceDescriptor):
     test_file = io.BytesIO()
 

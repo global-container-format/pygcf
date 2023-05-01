@@ -1,6 +1,6 @@
 import pytest
 
-from gcf.compression import compress, decompress, COMPRESSOR_TABLE
+from gcf.compression import COMPRESSOR_TABLE, compress, decompress
 
 
 @pytest.mark.parametrize("supercompression_scheme", tuple(COMPRESSOR_TABLE.keys()))

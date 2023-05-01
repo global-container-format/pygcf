@@ -146,7 +146,10 @@ def write_composite_resource_descriptor(fileobj: BinaryIO, descriptor: Composite
     """
 
     if isinstance(descriptor, bytes):
-        def serialize(x: bytes) -> bytes: return x
+
+        def serialize(data: bytes) -> bytes:
+            return data
+
     else:
         serializer_map = {
             ResourceType.TEXTURE.value: serialize_texture_resource_descriptor,
@@ -154,11 +157,11 @@ def write_composite_resource_descriptor(fileobj: BinaryIO, descriptor: Composite
         }
 
         try:
-            serialize = serializer_map[descriptor["type"]]
+            serialize = serializer_map[descriptor["type"]]  # type: ignore
         except KeyError as exc:
             raise ValueError("Unknown descriptor object", descriptor) from exc
 
-    raw_descriptor = serialize(descriptor)
+    raw_descriptor = serialize(descriptor)  # type: ignore
 
     fileobj.write(raw_descriptor)
 
@@ -182,8 +185,8 @@ def skip_padding(fileobj: BinaryIO, header: Header):
 def write_padding(fileobj: BinaryIO, header: Header):
     """Write padding between two resources.
 
-        :param fileobj: The file object.
-        :param header: The GCF file header.
+    :param fileobj: The file object.
+    :param header: The GCF file header.
     """
 
     if header["flags"] & ContainerFlags.UNPADDED:
@@ -192,6 +195,6 @@ def write_padding(fileobj: BinaryIO, header: Header):
     origin = fileobj.tell()
     aligned = align_size(origin, 8)
     padding_size = aligned - origin
-    padding = b'\0' * padding_size
+    padding = b"\0" * padding_size
 
     fileobj.write(padding)

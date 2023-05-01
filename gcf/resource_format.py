@@ -194,4 +194,4 @@ class Format(IntEnum):
     ASTC_12X10_SRGB_BLOCK = 182
     ASTC_12X12_UNORM_BLOCK = 183
     ASTC_12X12_SRGB_BLOCK = 184
-    TEST = 0xffffffff
+    TEST = 0xFFFFFFFF

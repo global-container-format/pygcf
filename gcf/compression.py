@@ -2,7 +2,6 @@
 GCF resource compression and decompression.
 """
 import zlib
-
 from enum import IntEnum, unique
 
 
@@ -14,7 +13,6 @@ class SupercompressionScheme(IntEnum):
     ZLIB = 1
     DEFLATE = 2
     TEST = 0xFFFF
-
 
 
 def compress_deflate(data, level=6):
