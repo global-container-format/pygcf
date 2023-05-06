@@ -23,7 +23,7 @@ pytest test
 To get a coverage report, run:
 
 ```bash
-pytest --cov=gcf test
+pytest --cov=gcf --cov-report term-missing test
 ```
 
 ## Development

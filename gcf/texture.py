@@ -6,7 +6,7 @@ import struct
 from enum import IntFlag
 from typing import List, Optional, TypedDict
 
-from .compression import SupercompressionScheme, compress, decompress
+from .compression import compress, decompress
 from .resource import (
     COMMON_DESCRIPTOR_SIZE,
     CommonResourceDescriptor,
@@ -14,7 +14,6 @@ from .resource import (
     deserialize_common_resource_descriptor,
     serialize_common_resource_descriptor,
 )
-from .resource_format import Format
 
 EXTENDED_DESCRIPTOR_FORMAT = "=3H2BHIH"
 EXTENDED_DESCRIPTOR_SIZE = struct.calcsize(EXTENDED_DESCRIPTOR_FORMAT)
@@ -56,7 +55,7 @@ class MipLevelDescriptor(TypedDict):
 
 def make_texture_resource_descriptor(
     *,
-    format_: Format,
+    format_: int,
     content_size: int,
     supercompression_scheme: int,
     base_width: int,
